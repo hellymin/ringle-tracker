@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mellinda's English Journey</title>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#f5f5f7; --white:#fff; --blue:#3182f6; --blue-light:#ebf3fe; --blue-text:#1b64da;
+  --green:#1fc883; --green-light:#e8faf3; --green-text:#0c9e61;
+  --orange:#ff6b00; --orange-light:#fff3e8; --orange-text:#d45500;
+  --gray100:#f9f9f9; --gray200:#f2f2f2; --gray300:#e5e5e5; --gray400:#c8c8c8;
+  --gray500:#8b8b8b; --gray600:#6b6b6b; --gray700:#3d3d3d; --gray900:#191919;
+  --r-sm:8px; --r-md:12px; --r-lg:16px;
+}
+body { font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo',sans-serif; background:var(--bg); color:var(--gray900); min-height:100vh; -webkit-font-smoothing:antialiased; }
+
+/* ── LOCK SCREEN ── */
+#lock-screen {
+  position:fixed; inset:0; background:var(--bg);
+  display:flex; align-items:center; justify-content:center; z-index:999;
+}
+.lock-box {
+  background:var(--white); border-radius:var(--r-lg);
+  padding:40px 36px; width:340px; text-align:center;
+}
+.lock-icon { font-size:36px; margin-bottom:16px; }
+.lock-title { font-size:18px; font-weight:700; color:var(--gray900); margin-bottom:6px; }
+.lock-sub { font-size:13px; color:var(--gray500); margin-bottom:24px; }
+.lock-input {
+  width:100%; padding:12px 16px; font-size:15px;
+  border:1.5px solid var(--gray300); border-radius:var(--r-md);
+  outline:none; transition:border-color .15s; text-align:center;
+  letter-spacing:0.15em; font-family:inherit;
+}
+.lock-input:focus { border-color:var(--blue); }
+.lock-input.error { border-color:#ff4d4f; animation:shake .3s; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+.lock-btn {
+  width:100%; margin-top:12px; padding:13px;
+  background:var(--blue); color:#fff; border:none; border-radius:var(--r-md);
+  font-size:15px; font-weight:600; cursor:pointer; font-family:inherit;
+  transition:background .15s;
+}
+.lock-btn:hover { background:#1a6ef0; }
+.lock-error { font-size:12px; color:#ff4d4f; margin-top:8px; min-height:16px; }
+.lock-hint { font-size:11px; color:var(--gray400); margin-top:20px; }
+
+/* ── LAYOUT ── */
+.page { max-width:1080px; margin:0 auto; padding:40px 24px 80px; display:none; }
+
+/* ── HEADER ── */
+.header { margin-bottom:28px; }
+.header-top { display:flex; justify-content:space-between; align-items:flex-start; }
+.header-eyebrow { font-size:13px; color:var(--gray500); margin-bottom:5px; }
+.header-title { font-size:26px; font-weight:700; color:var(--gray900); letter-spacing:-.5px; }
+.header-sub { font-size:14px; color:var(--gray500); margin-top:4px; }
+.private-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:12px; font-weight:500; padding:5px 12px;
+  border-radius:20px; background:var(--gray100); color:var(--gray600);
+  white-space:nowrap; margin-top:4px;
+}
+.logout-btn {
+  font-size:12px; color:var(--gray400); background:none; border:none;
+  cursor:pointer; margin-left:10px; padding:5px 8px; border-radius:var(--r-sm);
+  font-family:inherit; transition:color .15s;
+}
+.logout-btn:hover { color:var(--gray700); }
+
+/* ── LEVEL SECTION ── */
+.level-section { background:var(--white); border-radius:var(--r-lg); padding:24px; margin-bottom:20px; }
+.level-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; }
+.level-cards { display:flex; gap:12px; }
+.level-card { display:flex; flex-direction:column; gap:4px; padding:14px 20px; border-radius:var(--r-md); min-width:130px; }
+.level-card.opic { background:var(--blue-light); }
+.level-card.opi  { background:var(--green-light); }
+.level-card-label { font-size:11px; font-weight:600; letter-spacing:.05em; }
+.level-card.opic .level-card-label { color:var(--blue-text); }
+.level-card.opi  .level-card-label { color:var(--green-text); }
+.level-card-value { font-size:30px; font-weight:700; letter-spacing:-1px; line-height:1; }
+.level-card.opic .level-card-value { color:var(--blue); }
+.level-card.opi  .level-card-value { color:var(--green); }
+.level-card-sub { font-size:11px; opacity:.7; }
+.level-card.opic .level-card-sub { color:var(--blue-text); }
+.level-card.opi  .level-card-sub { color:var(--green-text); }
+.level-goal { display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
+.level-goal-label { font-size:11px; color:var(--gray500); }
+.level-goal-badges { display:flex; gap:6px; }
+.goal-badge { font-size:12px; font-weight:600; padding:5px 12px; border-radius:20px; border:1.5px dashed; }
+.goal-badge.opic { border-color:var(--blue); color:var(--blue); }
+.goal-badge.opi  { border-color:var(--green); color:var(--green); }
+.chart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.chart-title { font-size:13px; font-weight:600; color:var(--gray700); }
+.chart-legend { display:flex; gap:14px; }
+.legend-item { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--gray500); }
+.legend-dot { width:8px; height:8px; border-radius:50%; }
+
+/* ── STAT GRID ── */
+.stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+.stat-card { background:var(--white); border-radius:var(--r-lg); padding:20px; position:relative; overflow:hidden; }
+.stat-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--blue); }
+.stat-label { font-size:12px; color:var(--gray500); margin-bottom:10px; }
+.stat-value { font-size:34px; font-weight:700; color:var(--gray900); letter-spacing:-1px; line-height:1; }
+.stat-unit { font-size:15px; font-weight:400; color:var(--gray500); margin-left:2px; }
+
+/* ── MAIN GRID ── */
+.main-grid { display:grid; grid-template-columns:1fr 316px; gap:16px; align-items:start; }
+
+/* ── CARD ── */
+.card { background:var(--white); border-radius:var(--r-lg); overflow:hidden; margin-bottom:16px; }
+.card:last-child { margin-bottom:0; }
+.card-head { padding:18px 20px 16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--gray200); }
+.card-title { font-size:15px; font-weight:600; color:var(--gray900); }
+.card-badge { font-size:11px; color:var(--gray500); background:var(--gray100); padding:3px 10px; border-radius:20px; }
+.card-body-pad { padding:16px 20px; }
+
+/* ── LESSON ROWS ── */
+.lesson-row { display:flex; align-items:flex-start; gap:14px; padding:14px 20px; border-bottom:1px solid var(--gray200); transition:background .12s; }
+.lesson-row:last-child { border-bottom:none; }
+.lesson-row:hover { background:var(--gray100); }
+.lesson-date-col { min-width:48px; flex-shrink:0; }
+.lesson-date { font-size:13px; font-weight:600; color:var(--blue); }
+.lesson-tutor { font-size:11px; color:var(--gray500); margin-top:2px; }
+.lesson-body { flex:1; min-width:0; }
+.lesson-topic { font-size:14px; font-weight:500; color:var(--gray900); margin-bottom:7px; line-height:1.35; }
+.tag-row { display:flex; flex-wrap:wrap; gap:5px; }
+.tag { font-size:11px; font-weight:500; padding:2px 9px; border-radius:6px; line-height:1.6; }
+.tag.fix { background:var(--orange-light); color:var(--orange-text); }
+.tag.strength { background:var(--green-light); color:var(--green-text); }
+.tag.vocab { background:var(--blue-light); color:var(--blue-text); }
+
+/* ── ERROR BARS ── */
+.err-item { margin-bottom:14px; }
+.err-item:last-child { margin-bottom:0; }
+.err-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.err-name { font-size:13px; color:var(--gray700); }
+.err-frac { font-size:12px; color:var(--gray500); }
+.bar-bg { height:5px; background:var(--gray200); border-radius:3px; }
+.bar-fill { height:5px; border-radius:3px; transition:width .9s cubic-bezier(.4,0,.2,1); }
+
+/* ── STRENGTHS ── */
+.str-item { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.str-item:last-child { margin-bottom:0; }
+.str-label { font-size:13px; color:var(--gray700); min-width:72px; }
+.str-bg { flex:1; height:5px; background:var(--gray200); border-radius:3px; }
+.str-fill { height:5px; border-radius:3px; background:var(--blue); transition:width .9s cubic-bezier(.4,0,.2,1); }
+.str-val { font-size:12px; color:var(--gray500); min-width:26px; text-align:right; }
+
+/* ── VOCAB ── */
+.vocab-item { display:flex; align-items:baseline; gap:10px; padding:9px 0; border-bottom:1px solid var(--gray200); }
+.vocab-item:last-child { border-bottom:none; }
+.vocab-en { font-size:13px; font-weight:500; color:var(--blue-text); min-width:140px; flex-shrink:0; }
+.vocab-ko { font-size:12px; color:var(--gray500); line-height:1.4; }
+
+/* ── UPLOAD ── */
+.upload-zone { border:1.5px dashed var(--gray300); border-radius:var(--r-md); padding:22px 16px; text-align:center; cursor:pointer; transition:border-color .15s,background .15s; position:relative; }
+.upload-zone:hover,.upload-zone.drag { border-color:var(--blue); background:var(--blue-light); }
+.upload-zone input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.uz-icon { font-size:22px; color:var(--gray400); margin-bottom:8px; }
+.uz-title { font-size:13px; font-weight:600; color:var(--gray700); margin-bottom:2px; }
+.uz-sub { font-size:12px; color:var(--gray500); }
+.prog-wrap { height:3px; background:var(--gray200); border-radius:2px; margin-top:12px; overflow:hidden; display:none; }
+.prog-wrap.on { display:block; }
+.prog-inner { height:3px; width:35%; background:var(--blue); border-radius:2px; animation:prog 1.1s ease-in-out infinite; }
+@keyframes prog { 0%{transform:translateX(-100%)} 100%{transform:translateX(340%)} }
+#status-msg { font-size:12px; color:var(--gray500); text-align:center; margin-top:8px; min-height:16px; }
+
+/* ── TOAST ── */
+#toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(6px); background:var(--gray900); color:#fff; font-size:13px; padding:11px 20px; border-radius:100px; white-space:nowrap; opacity:0; transition:opacity .2s,transform .2s; pointer-events:none; z-index:9999; }
+#toast.on { opacity:1; transform:translateX(-50%) translateY(0); }
+
+@media(max-width:800px) {
+  .stat-grid { grid-template-columns:repeat(2,1fr); }
+  .main-grid { grid-template-columns:1fr; }
+  .level-top { flex-direction:column; gap:14px; }
+  .level-goal { align-items:flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOCK SCREEN -->
+<div id="lock-screen">
+  <div class="lock-box">
+    <div class="lock-icon">🔒</div>
+    <div class="lock-title">Mellinda's English Journey</div>
+    <div class="lock-sub">비밀번호를 입력하세요</div>
+    <input class="lock-input" id="pw-input" type="password" placeholder="••••••" autocomplete="current-password">
+    <button class="lock-btn" id="pw-btn">입장</button>
+    <div class="lock-error" id="pw-error"></div>
+    <div class="lock-hint">비밀번호는 파일 내 PW_HASH를 수정해 변경할 수 있어요</div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page" id="dashboard">
+
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="header-eyebrow">링글 학습 트래커</div>
+        <div class="header-title">Mellinda's English Journey</div>
+        <div class="header-sub">2026년 3월부터 꾸준히 공부 중</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;margin-top:4px">
+        <span class="private-badge">🔐 개인 전용</span>
+        <button class="logout-btn" id="logout-btn">잠금</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEVEL SECTION -->
+  <div class="level-section">
+    <div class="level-top">
+      <div class="level-cards">
+        <div class="level-card opic">
+          <div class="level-card-label">OPIc 예측</div>
+          <div class="level-card-value">AL</div>
+          <div class="level-card-sub">Advanced Low</div>
+        </div>
+        <div class="level-card opi">
+          <div class="level-card-label">OPI 예측</div>
+          <div class="level-card-value">AM</div>
+          <div class="level-card-sub">Advanced Mid</div>
+        </div>
+      </div>
+      <div class="level-goal">
+        <div class="level-goal-label">목표 레벨</div>
+        <div class="level-goal-badges">
+          <span class="goal-badge opic">OPIc AL</span>
+          <span class="goal-badge opi">OPI AH</span>
+        </div>
+      </div>
+    </div>
+    <div class="chart-header">
+      <span class="chart-title">레벨 추이</span>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>OPIc</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>OPI</div>
+      </div>
+    </div>
+    <div id="level-chart"></div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-label">총 수업 횟수</div><div class="stat-value"><span id="s-lessons">-</span><span class="stat-unit">회</span></div></div>
+    <div class="stat-card"><div class="stat-label">교정받은 표현</div><div class="stat-value"><span id="s-corrections">-</span><span class="stat-unit">+</span></div></div>
+    <div class="stat-card"><div class="stat-label">습득 표현</div><div class="stat-value"><span id="s-vocab">-</span><span class="stat-unit">개</span></div></div>
+    <div class="stat-card"><div class="stat-label">함께한 튜터</div><div class="stat-value"><span id="s-tutors">-</span><span class="stat-unit">명</span></div></div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+    <div>
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">수업 기록</span>
+          <span class="card-badge" id="lesson-badge">-</span>
+        </div>
+        <div id="lesson-list"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">새 수업 추가</span></div>
+        <div class="card-body-pad">
+          <div class="upload-zone" id="upload-zone">
+            <input type="file" id="pdf-input" accept=".pdf">
+            <div class="uz-icon">📄</div>
+            <div class="uz-title">PDF 업로드</div>
+            <div class="uz-sub">링글 피드백 PDF를 올려주세요</div>
+          </div>
+          <div class="prog-wrap" id="prog"><div class="prog-inner"></div></div>
+          <div id="status-msg"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">반복 오류 패턴</span></div>
+        <div class="card-body-pad" id="err-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">강점 지표</span></div>
+        <div class="card-body-pad" id="str-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">습득 표현 사전</span></div>
+        <div class="card-body-pad" id="vocab-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+// 비밀번호 설정 — 바꾸고 싶으면 아래 값만 수정하세요
+// 원하는 비밀번호를 입력하면 해시가 자동 계산됩니다
+// 현재 비밀번호: mellinda2026
+// ══════════════════════════════════════════
+const PW_HASH = '803a7503e143975bbfdd6c08a92e2c87f0e4193c1ecbf5fdbc36ebec2511b4a0';
+
+async function hashPW(pw) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+const SESSION_KEY = 'mellinda_auth_v1';
+const DATA_KEY    = 'mellinda_data_v3';
+
+// ── AUTH ──
+async function tryLogin() {
+  const pw = document.getElementById('pw-input').value;
+  const hash = await hashPW(pw);
+  if (hash === PW_HASH) {
+    sessionStorage.setItem(SESSION_KEY, '1');
+    showDashboard();
+  } else {
+    const inp = document.getElementById('pw-input');
+    inp.classList.add('error');
+    document.getElementById('pw-error').textContent = '비밀번호가 틀렸어요';
+    setTimeout(() => { inp.classList.remove('error'); inp.value = ''; }, 800);
+  }
+}
+
+function showDashboard() {
+  document.getElementById('lock-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  renderAll();
+}
+
+function lock() {
+  sessionStorage.removeItem(SESSION_KEY);
+  document.getElementById('lock-screen').style.display = 'flex';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('pw-input').value = '';
+  document.getElementById('pw-error').textContent = '';
+}
+
+document.getElementById('pw-btn').addEventListener('click', tryLogin);
+document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+document.getElementById('logout-btn').addEventListener('click', lock);
+
+// 세션 유지 (새로고침해도 유지, 탭 닫으면 초기화)
+if (sessionStorage.getItem(SESSION_KEY)) showDashboard();
+
+// ── DATA ──
+const DEFAULT = {
+  corrections: 30,
+  lessons: [
+    {date:'03.09',tutor:'Stephan',topic:'Choosing an English Name',tags:[{type:'fix',text:'접속사 과다'},{type:'fix',text:'시제 불일치'},{type:'fix',text:'문장 어순'}]},
+    {date:'03.10',tutor:'Nicholas',topic:'Why Language Learners Make Mistakes',tags:[{type:'strength',text:'적극적 태도'},{type:'vocab',text:'drag myself off my sick bed'},{type:'fix',text:'자연스러운 표현'}]},
+    {date:'03.21',tutor:'Blaise',topic:'[OPIc] Relaxing at Home',tags:[{type:'strength',text:'veg out 자연 사용'},{type:'fix',text:'the Spain → Spain'},{type:'fix',text:'at home vs in my home'}]},
+    {date:'03.26',tutor:'Blaise',topic:'Planning Campaign (독서 습관)',tags:[{type:'fix',text:'과거진행형 활용'},{type:'vocab',text:'convenient / take notes'},{type:'strength',text:'독서 경험 상세 설명'}]},
+    {date:'04.10',tutor:'Blaise',topic:'The Rise of Synthetic Slop',tags:[{type:'strength',text:'AI 이슈 심층 논의'},{type:'vocab',text:'encounter / skip / lack'},{type:'fix',text:"I've noticed 현재완료"}]},
+    {date:'04.11',tutor:'Janelle',topic:'Small Talk (10) — 환경공학 & 직장',tags:[{type:'strength',text:'다양한 표현 구사'},{type:'fix',text:'but → however 다양화'},{type:'vocab',text:'strenuous / hazardous'}]},
+    {date:'04.19',tutor:'Blaise',topic:'The Analog Boom',tags:[{type:'fix',text:'단수/복수 일치'},{type:'fix',text:'I attractive → attracted to'},{type:'strength',text:'다각도 주제 분석'}]},
+    {date:'04.26',tutor:'Blaise',topic:'Small Talk (13) — 대학·전공 선택',tags:[{type:'fix',text:'과거완료 had recommended'},{type:'fix',text:'drive vs ride'},{type:'strength',text:'어려운 설명도 끝까지'}]},
+    {date:'05.01',tutor:'Blaise',topic:'Small Talk (18) — 인생의 현재가 최고',tags:[{type:'strength',text:'사전 준비 우수'},{type:'vocab',text:'strive / emulate'},{type:'fix',text:'현재완료 지속 용법'}]},
+    {date:'05.10',tutor:'Blaise',topic:'Small Talk (18) — 미래·유학·노화관',tags:[{type:'vocab',text:'Ivy League / multinational'},{type:'fix',text:'시제 일관성'},{type:'fix',text:'가정법 과거완료'}]},
+    {date:'05.16',tutor:'Blaise',topic:'Identifying Personal Strengths',tags:[{type:'strength',text:'수업 준비 탁월'},{type:'fix',text:'단수/복수 주어-동사 일치'},{type:'vocab',text:'I realized / I came to think'}]},
+  ],
+  errors: [
+    {name:'시제 오류',count:9,max:11,color:'#f59e0b'},
+    {name:'관사·전치사',count:7,max:11,color:'#3182f6'},
+    {name:'단수/복수 불일치',count:5,max:11,color:'#8b5cf6'},
+    {name:'접속사 단조로움',count:4,max:11,color:'#1fc883'},
+    {name:'어휘 선택',count:3,max:11,color:'#ff6b00'},
+  ],
+  strengths: [
+    {label:'논리적 답변',val:95},{label:'주도적 참여',val:90},
+    {label:'스토리텔링',val:88},{label:'끈기',val:92},{label:'수업 준비도',val:85},
+  ],
+  vocab: [
+    {en:'drag oneself off',ko:'(아파도) 억지로 일어나다'},{en:'devour',ko:'허겁지겁 먹다'},
+    {en:'heading to work',ko:'출근하는 중'},{en:'fully aware of',ko:'충분히 인지하고 있는'},
+    {en:'tend to',ko:'~하는 경향이 있다'},{en:'strive',ko:'분투하다, 노력하다'},
+    {en:'make the most of',ko:'최대한 활용하다'},{en:'emulate',ko:'본받다, 모방하다'},
+    {en:'take after',ko:'(성격이) 닮다'},{en:'wealth of knowledge',ko:'풍부한 지식'},
+    {en:'dig deeper',ko:'더 깊이 탐구하다'},{en:'pushing through',ko:'어려움을 뚫고 나아가다'},
+    {en:'precarious',ko:'불안정한, 위태로운'},{en:'hazardous',ko:'위험한 (화학물질 등)'},
+    {en:'strenuous',ko:'힘든, 격렬한'},{en:'encounter / come across',ko:'우연히 마주치다'},
+    {en:'relatively manageable',ko:'비교적 감당할 만한'},{en:'I came to think',ko:'~라고 생각하게 되었다'},
+    {en:'I realized',ko:'깨달았다 (통찰의 순간)'},{en:"I've noticed",ko:'(지금까지) 눈치채왔다'},
+  ]
+};
+
+function load() {
+  try { const r = localStorage.getItem(DATA_KEY); return r ? JSON.parse(r) : structuredClone(DEFAULT); }
+  catch { return structuredClone(DEFAULT); }
+}
+function save(d) { localStorage.setItem(DATA_KEY, JSON.stringify(d)); }
+
+let data = load();
+
+// ── RENDER ──
+function renderAll() {
+  renderStats();
+  renderLessons();
+  renderErrors();
+  renderStrengths();
+  renderVocab();
+  renderLevelChart();
+}
+
+function renderStats() {
+  const tutors = new Set(data.lessons.map(l => l.tutor));
+  document.getElementById('s-lessons').textContent = data.lessons.length;
+  document.getElementById('s-corrections').textContent = data.corrections || 30;
+  document.getElementById('s-vocab').textContent = data.vocab.length;
+  document.getElementById('s-tutors').textContent = tutors.size;
+  document.getElementById('lesson-badge').textContent = data.lessons.length + '회';
+}
+
+function renderLessons() {
+  const ll = document.getElementById('lesson-list');
+  ll.innerHTML = '';
+  [...data.lessons].reverse().forEach(l => {
+    const row = document.createElement('div');
+    row.className = 'lesson-row';
+    row.innerHTML = `
+      <div class="lesson-date-col">
+        <div class="lesson-date">${l.date}</div>
+        <div class="lesson-tutor">${l.tutor}</div>
+      </div>
+      <div class="lesson-body">
+        <div class="lesson-topic">${l.topic}</div>
+        <div class="tag-row">${l.tags.map(t=>`<span class="tag ${t.type}">${t.text}</span>`).join('')}</div>
+      </div>`;
+    ll.appendChild(row);
+  });
+}
+
+function renderErrors() {
+  const el = document.getElementById('err-list');
+  el.innerHTML = '';
+  data.errors.forEach(e => {
+    const pct = Math.round(e.count / e.max * 100);
+    el.innerHTML += `<div class="err-item">
+      <div class="err-header"><span class="err-name">${e.name}</span><span class="err-frac">${e.count}/${e.max}</span></div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${e.color}"></div></div>
+    </div>`;
+  });
+}
+
+function renderStrengths() {
+  const sl = document.getElementById('str-list');
+  sl.innerHTML = '';
+  data.strengths.forEach(s => {
+    sl.innerHTML += `<div class="str-item">
+      <span class="str-label">${s.label}</span>
+      <div class="str-bg"><div class="str-fill" style="width:${s.val}%"></div></div>
+      <span class="str-val">${s.val}</span>
+    </div>`;
+  });
+}
+
+function renderVocab() {
+  const vl = document.getElementById('vocab-list');
+  vl.innerHTML = '';
+  data.vocab.forEach(v => {
+    vl.innerHTML += `<div class="vocab-item">
+      <span class="vocab-en">${v.en}</span>
+      <span class="vocab-ko">${v.ko}</span>
+    </div>`;
+  });
+}
+
+function renderLevelChart() {
+  const levels    = ['IM3','IH','AL','AL','AL','AL','AL','AL','AL','AL','AL'];
+  const opiLevels = ['IM3','IH','IH','IH','AM','AM','AM','AM','AM','AM','AM'];
+  const dates = ['03.09','03.10','03.21','03.26','04.10','04.11','04.19','04.26','05.01','05.10','05.16'];
+  const order = ['IM1','IM2','IM3','IH','AL','AM','AH'];
+  const W=700,H=160,PL=40,PR=50,PT=12,PB=32;
+  const cw=W-PL-PR, ch=H-PT-PB, n=dates.length;
+  const xs = dates.map((_,i) => PL + (i/(n-1))*cw);
+  const yFor = lvl => PT + ch - (order.indexOf(lvl)/(order.length-1))*ch;
+  const ys1=levels.map(yFor), ys2=opiLevels.map(yFor);
+  const yGoalOPI=yFor('AH');
+
+  function smooth(xa,ya) {
+    let d=`M ${xa[0]} ${ya[0]}`;
+    for(let i=1;i<xa.length;i++){const mx=(xa[i-1]+xa[i])/2;d+=` C ${mx} ${ya[i-1]},${mx} ${ya[i]},${xa[i]} ${ya[i]}`;}
+    return d;
+  }
+  const p1=smooth(xs,ys1), p2=smooth(xs,ys2);
+  const a1=p1+` L ${xs[n-1]} ${PT+ch} L ${xs[0]} ${PT+ch} Z`;
+  const a2=p2+` L ${xs[n-1]} ${PT+ch} L ${xs[0]} ${PT+ch} Z`;
+
+  const yLabels=order.map((lvl,i)=>{
+    const y=PT+ch-(i/(order.length-1))*ch, isG=lvl==='AH';
+    return `<text x="${PL-6}" y="${y+4}" text-anchor="end" font-size="10" fill="${isG?'#1fc883':'#c8c8c8'}" font-weight="${isG?'600':'400'}">${lvl}</text>
+    <line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="${isG?'#1fc88355':'#f2f2f2'}" stroke-width="${isG?1.5:1}" stroke-dasharray="${isG?'4 3':''}"/>`;
+  }).join('');
+  const dots1=xs.map((x,i)=>`<circle cx="${x}" cy="${ys1[i]}" r="4" fill="white" stroke="#3182f6" stroke-width="2"/>`).join('');
+  const dots2=xs.map((x,i)=>`<circle cx="${x}" cy="${ys2[i]}" r="4" fill="white" stroke="#1fc883" stroke-width="2"/>`).join('');
+  const xLabels=dates.map((d,i)=>(i%2===0||i===n-1)?`<text x="${xs[i]}" y="${H-6}" text-anchor="middle" font-size="10" fill="#8b8b8b">${d}</text>`:'').join('');
+  const ax=xs[n-1]+18, cy2=ys2[n-1], midY=(cy2+yGoalOPI)/2;
+
+  document.getElementById('level-chart').innerHTML=`
+    <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block" overflow="visible">
+      <defs>
+        <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3182f6" stop-opacity=".13"/><stop offset="100%" stop-color="#3182f6" stop-opacity="0"/></linearGradient>
+        <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1fc883" stop-opacity=".10"/><stop offset="100%" stop-color="#1fc883" stop-opacity="0"/></linearGradient>
+        <marker id="arr" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+          <path d="M1,6 L3.5,1 L6,6" fill="none" stroke="#1fc883" stroke-width="1.3" stroke-linecap="round"/>
+        </marker>
+      </defs>
+      ${yLabels}${xLabels}
+      <path d="${a1}" fill="url(#g1)"/>
+      <path d="${a2}" fill="url(#g2)"/>
+      <path d="${p1}" fill="none" stroke="#3182f6" stroke-width="2.5"/>
+      <path d="${p2}" fill="none" stroke="#1fc883" stroke-width="2.5" stroke-dasharray="5 3"/>
+      ${dots2}${dots1}
+      <line x1="${ax}" y1="${cy2-2}" x2="${ax}" y2="${yGoalOPI+7}" stroke="#1fc883" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#arr)"/>
+      <text x="${ax+6}" y="${midY+4}" font-size="9" fill="#1fc883" font-weight="600">목표</text>
+    </svg>`;
+}
+
+// ── UPLOAD ──
+const zone = document.getElementById('upload-zone');
+const pdfInput = document.getElementById('pdf-input');
+const prog = document.getElementById('prog');
+const statusMsg = document.getElementById('status-msg');
+
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag'); if(e.dataTransfer.files[0]) analyze(e.dataTransfer.files[0]); });
+pdfInput.addEventListener('change', e => { if(e.target.files[0]) analyze(e.target.files[0]); });
+
+async function analyze(file) {
+  prog.classList.add('on'); statusMsg.textContent = 'PDF 읽는 중...'; pdfInput.disabled = true;
+  try {
+    const b64 = await new Promise((res,rej) => {
+      const fr = new FileReader();
+      fr.onload = () => res(fr.result.split(',')[1]);
+      fr.onerror = rej;
+      fr.readAsDataURL(file);
+    });
+    statusMsg.textContent = 'Claude가 분석 중...';
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514', max_tokens:1000,
+        messages:[{role:'user', content:[
+          {type:'document', source:{type:'base64', media_type:'application/pdf', data:b64}},
+          {type:'text', text:`Analyze this Ringle English tutoring feedback PDF for Korean learner Mellinda.
+Return ONLY valid JSON, no markdown:
+{
+  "date": "MM.DD format",
+  "tutor": "tutor name",
+  "topic": "lesson topic",
+  "tags": [{"type":"fix","text":"10자 이내 한국어"},{"type":"strength","text":"10자 이내 한국어"},{"type":"vocab","text":"key English expression"}],
+  "newVocab": [{"en":"expression","ko":"Korean meaning"}],
+  "errorTypes": ["시제 오류","관사·전치사"]
+}
+tags: 3-4 items. newVocab: 2-4 items. Return ONLY JSON.`}
+        ]}]
+      })
+    });
+    const d = await resp.json();
+    const p = JSON.parse(d.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim());
+
+    if (!data.lessons.find(l => l.date === p.date)) {
+      data.lessons.push({date:p.date, tutor:p.tutor, topic:p.topic, tags:p.tags});
+      data.lessons.sort((a,b) => a.date.localeCompare(b.date));
+    }
+    if (p.newVocab) p.newVocab.forEach(v => { if(!data.vocab.find(x=>x.en===v.en)) data.vocab.push(v); });
+    if (p.errorTypes) {
+      const total = data.lessons.length;
+      p.errorTypes.forEach(et => {
+        const ex = data.errors.find(e => e.name.includes(et.split(' ')[0]) || et.includes(e.name.split('·')[0]));
+        if (ex) { ex.count = Math.min(ex.count+1, total); ex.max = total; }
+      });
+      data.errors.forEach(e => e.max = total);
+    }
+    data.corrections = (data.corrections||30) + 3;
+    save(data);
+    renderAll();
+    toast('새 수업 추가됨: ' + p.topic);
+    statusMsg.textContent = '완료!';
+  } catch(e) {
+    statusMsg.textContent = '분석 실패. 다시 시도해주세요.';
+    console.error(e);
+  } finally {
+    prog.classList.remove('on'); pdfInput.disabled = false; pdfInput.value = '';
+    setTimeout(() => { statusMsg.textContent = ''; }, 2500);
+  }
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  setTimeout(() => t.classList.remove('on'), 3000);
+}
+</script>
+</body>
+</html>

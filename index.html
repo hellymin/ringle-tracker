@@ -242,13 +242,17 @@ body { font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo',sans-serif; 
       <div class="level-cards">
         <div class="level-card opic">
           <div class="level-card-label" id="t-opic-label">OPIc 예측</div>
-          <div class="level-card-value">AL</div>
-          <div class="level-card-sub">Advanced Low</div>
+          <div class="level-card-value">IH</div>
+          <div class="level-card-sub" id="t-opic-sub">Intermediate High</div>
         </div>
         <div class="level-card opi">
           <div class="level-card-label" id="t-opi-label">OPI 예측</div>
-          <div class="level-card-value">AM</div>
-          <div class="level-card-sub">Advanced Mid</div>
+          <div class="level-card-value">IM</div>
+          <div class="level-card-sub" id="t-opi-sub">Intermediate Mid</div>
+        </div>
+        <div class="level-card" style="background:var(--gray100);min-width:0;padding:14px 16px">
+          <div class="level-card-label" style="color:var(--gray500)" id="t-basis-label">진단 기준</div>
+          <div style="font-size:11px;color:var(--gray600);margin-top:4px;line-height:1.6" id="t-basis-text">원본 발화 70%<br>튜터 문법 피드백 30%</div>
         </div>
       </div>
       <div class="level-goal">
@@ -272,8 +276,8 @@ body { font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo',sans-serif; 
   <!-- FEEDBACK & FEEDFORWARD -->
   <div class="feedback-section" id="fb-section">
     <div class="feedback-section-header">
-      <span class="feedback-section-title" id="t-fb-title">OPI AH 달성을 위한 피드백 & 피드포워드</span>
-      <span class="feedback-target">🎯 OPI AM → AH</span>
+      <span class="feedback-section-title" id="t-fb-title">OPIc AL · OPI AH 달성을 위한 피드백 & 피드포워드</span>
+      <span class="feedback-target">🎯 IH/IM → AL/AH</span>
     </div>
     <div class="feedback-grid">
       <div>
@@ -360,20 +364,20 @@ const I18N = {
     goalLabel: '목표 레벨',
     chartTitle: '레벨 추이',
     chartGoal: '목표',
-    fbTitle: 'OPI AH 달성을 위한 피드백 & 피드포워드',
-    fbCol1: '현재 상태 피드백',
+    fbTitle: 'OPIc AL · OPI AH 달성을 위한 피드백 & 피드포워드',
+    fbCol1: '현재 상태 피드백 (원본 발화 분석)',
     fbCol2: '앞으로 집중할 것',
     feedback: [
-      { icon:'⏱', label:'시제 컨트롤 미흡', text:'과거·현재완료·가정법을 혼용하는 패턴이 11회 중 9회 지적됨. 특히 "since ~" 구문에서 현재완료 대신 과거단순을 쓰는 오류가 반복됩니다.' },
-      { icon:'📌', label:'관사·전치사 자동화 부족', text:'"the Spain", "in my home", "ride a car" 등 고빈도 오류가 계속 나타납니다. 개별 교정은 받았지만 자동화까지는 아직 이어지지 않았어요.' },
-      { icon:'🔗', label:'접속사 단조로움', text:'"but"을 반복 사용하는 패턴이 강합니다. 4명의 튜터 모두 다양한 전환어 사용을 권고했습니다.' },
-      { icon:'📏', label:'문장이 길고 복잡', text:'아이디어를 한 문장에 접속사로 계속 연결하려는 경향이 있어 논리 흐름이 흐려집니다. AH 레벨에서는 간결하고 임팩트 있는 문장 구사가 필요합니다.' },
+      { icon:'⚠️', label:'기본 문법 오류가 매 문장에 분포', text:'원본 발화 분석 결과, 시제·단수복수·관사 오류가 거의 모든 발화에 산재합니다. "I attractive", "even if I sick", "choosed", "one of my friend go" 등 IH 수준의 구조적 오류가 반복됩니다. 아이디어의 깊이는 AL이지만, 그걸 담는 문법 그릇이 IH입니다.' },
+      { icon:'⏱', label:'시제 자동화 미완성 (가장 핵심 과제)', text:'"I always think since I go to high school"(현재→현재완료 필요), "That makes me a better person"(과거인데 현재), "I study very hard"(과거인데 현재) 등 시제 판단 자체가 아직 자동화되지 않았습니다. 알고는 있지만 말할 때 적용이 안 되는 상태입니다.' },
+      { icon:'📐', label:'단수/복수 판단 오류 빈도 높음', text:'"one of my friend go", "inspection is", "that tasks is", "e-readers is difficult" 등 주어-동사 수 일치 오류가 11회 중 거의 모든 수업에 등장합니다. 특히 "one of + 복수명사 + 단수동사" 패턴이 고착화되어 있습니다.' },
+      { icon:'🔗', label:'문장을 접속사로 끝없이 연결하는 습관', text:'"so ~ and ~ so ~ so ~" 패턴으로 한 문장이 5~7개 절로 이어지는 경우가 초반 수업에 자주 등장합니다. 후반부에 다소 개선되었지만 여전히 but 과다 사용이 남아 있습니다. AL 이상에서는 짧고 정확한 문장이 더 높게 평가됩니다.' },
     ],
     feedforward: [
-      { icon:'🎯', label:'시제 의식적 체크 습관화', text:'말하기 전 "이게 끝난 과거인가, 지금까지 이어지는 경험인가?"를 0.5초 자문하는 루틴을 만드세요. The Office 시청 시 자막의 시제 패턴을 눈여겨 보는 것도 효과적입니다.' },
-      { icon:'📖', label:'관사·전치사 집중 복습', text:'고빈도 오류 패턴 5개(국가명, at home, drive/ride, work for/at, the+형용사)를 플래시카드로 만들어 매일 아침 복습하세요. 틀린 문장을 그대로 외우면 더 빠릅니다.' },
-      { icon:'💬', label:'전환어 30개 내재화', text:'however / therefore / as a result / even so / that said / in contrast / meanwhile / consequently — 이 8개를 먼저 완전히 내재화하세요. 링글 수업에서 의식적으로 한 번씩 사용해보는 것을 목표로 하세요.' },
-      { icon:'🗣', label:'OPI 스타일 답변 구조 훈련', text:'OPI AH는 복잡한 주제를 논리적·자발적으로 전개하는 능력을 봅니다. PREP(Point→Reason→Example→Point) 구조로 2분 말하기 연습을 매일 1회 추가하세요. 환경·사회·직업 주제가 특히 유효합니다.' },
+      { icon:'🎯', label:'시제 판단 루틴 만들기 (1순위)', text:'말하기 전 딱 한 가지만 체크하세요: "이게 지금 끝난 이야기인가(과거단순), 아직 이어지는 이야기인가(현재완료)?" The Office 시청 시 자막에서 시제 변화 패턴을 소리 내어 따라 읽으면 자동화가 빨라집니다.' },
+      { icon:'📋', label:'"one of + 복수 + 단수동사" 패턴 집중 교정', text:'이 패턴은 한국어 어순 간섭으로 생기는 고착 오류입니다. "One of my friends IS" / "One of the students HAS"를 10번씩 소리 내어 말하는 드릴을 2주만 해도 효과가 큽니다. 링글 수업 시작 전 워밍업으로 활용하세요.' },
+      { icon:'✂️', label:'긴 문장 → 두 문장으로 쪼개는 연습', text:'발화 후 셀프 피드백: "내가 방금 so/and를 3번 이상 썼나?" → 그렇다면 마침표를 찍고 다시 시작하세요. 짧은 문장의 연속이 AL/AH에서 오히려 더 높은 점수를 받습니다.' },
+      { icon:'🗣', label:'내용 강점을 살려 OPIc AL 바로 도전', text:'원본 발화의 내용·어휘·논리는 이미 AL 수준입니다. 문법 자동화만 되면 OPIc AL은 충분히 가능합니다. 6주 안에 OPIc AL 시험을 보고, 실제 점수로 현재 위치를 확인하는 게 가장 효율적인 다음 단계입니다.' },
     ],
     stat1: '총 수업 횟수', unit1: '회',
     stat2: '교정받은 표현',
@@ -439,20 +443,20 @@ const I18N = {
     goalLabel: 'Target Level',
     chartTitle: 'Level Progress',
     chartGoal: 'Goal',
-    fbTitle: 'Feedback & Feedforward for OPI AH',
-    fbCol1: 'Current Feedback',
+    fbTitle: 'Feedback & Feedforward — Toward OPIc AL & OPI AH',
+    fbCol1: 'Current Feedback (Based on Original Speech)',
     fbCol2: 'What to Focus On Next',
     feedback: [
-      { icon:'⏱', label:'Inconsistent Tense Control', text:'Tense errors appeared in 9 out of 11 sessions. The most common pattern is using simple past instead of present perfect with "since ~" clauses. Corrected in-class, but not yet automatic.' },
-      { icon:'📌', label:'Article & Preposition Gaps', text:'High-frequency errors like "the Spain", "in my home", and "ride a car" keep reappearing. Individual corrections have been given, but automatic recall hasn\'t fully developed yet.' },
-      { icon:'🔗', label:'Repetitive Conjunctions', text:'"But" is overused as a connector. All four tutors recommended expanding your range of transitional expressions for a more natural, varied flow.' },
-      { icon:'📏', label:'Overly Long, Chained Sentences', text:'There\'s a tendency to link ideas with repeated conjunctions in a single sentence, which dilutes logical clarity. AH-level speech requires concise, impactful delivery.' },
+      { icon:'⚠️', label:'Grammar Errors in Nearly Every Utterance', text:'Analysis of your original speech (70% weight) shows tense, number agreement, and article errors spread across almost every sentence. Errors like "I attractive", "even if I sick", "choosed", and "one of my friend go" are IH-level structural issues. Your ideas are AL, but the grammar container is still IH.' },
+      { icon:'⏱', label:'Tense Automaticity Not Yet Developed (Top Priority)', text:'"I always think since I go to high school" (needs present perfect), "That makes me a better person" (should be past), "I study very hard" (should be studied) — tense judgment isn\'t yet automatic in real-time speech. You know the rules but can\'t apply them while talking.' },
+      { icon:'📐', label:'High Frequency of Singular/Plural Mismatches', text:'"One of my friend go", "inspection is", "that tasks is", "e-readers is difficult" — subject-verb agreement errors appeared in nearly every session. The pattern "one of + plural noun + singular verb" is especially fixed.' },
+      { icon:'🔗', label:'Chaining Sentences with Repeated Conjunctions', text:'Patterns like "so ~ and ~ so ~ so ~" stretched single sentences to 5–7 clauses, especially in earlier sessions. While this improved later, overuse of "but" remains. At AL/AH level, short and precise sentences score higher.' },
     ],
     feedforward: [
-      { icon:'🎯', label:'Build a Tense-Check Habit', text:'Before speaking, pause briefly and ask: "Is this finished past, or does it continue to now?" When watching The Office, pay attention to how tenses shift in natural dialogue.' },
-      { icon:'📖', label:'Drill the Top 5 Article/Prep Errors', text:'Create flashcards for your five most frequent errors: country names (no "the"), "at home", "drive" vs "ride", "work for/at", and "the + adjective" structures. Memorizing the wrong version alongside the right one speeds up correction.' },
-      { icon:'💬', label:'Internalize 8 Transition Words', text:'Master these first: however / therefore / as a result / even so / that said / in contrast / meanwhile / consequently. Set a goal to use at least one consciously in each Ringle session.' },
-      { icon:'🗣', label:'Practice OPI-Style Responses (PREP)', text:'OPI AH requires spontaneous, well-organized speech on complex topics. Practice 2-minute PREP responses (Point → Reason → Example → Point) daily. Focus on environmental, social, and career topics — areas where you already have strong opinions.' },
+      { icon:'🎯', label:'Build a Tense-Decision Habit (Priority #1)', text:'Before speaking, check just one thing: "Is this a finished story (simple past) or does it continue to now (present perfect)?" When watching The Office, read the subtitles aloud and mimic tense shifts — this speeds up automaticity significantly.' },
+      { icon:'📋', label:'Drill "one of + plural + singular verb" Specifically', text:'This is a fixed error caused by Korean word order interference. Say "One of my friends IS" / "One of the students HAS" out loud 10 times daily for two weeks. Use it as a warm-up before each Ringle session.' },
+      { icon:'✂️', label:'Practice Splitting Long Sentences', text:'After speaking, self-check: "Did I just use so/and more than 3 times?" If yes, stop, add a period, and restart. A series of short, clean sentences consistently scores higher at AL/AH than one long chained sentence.' },
+      { icon:'🗣', label:'Your Content Is Already AL — Take the OPIc Now', text:'Your ideas, vocabulary range, and logical flow are already at AL level. Grammar automaticity is the only gap. Taking the OPIc AL exam within 6 weeks is the most efficient next step to confirm your real level and close that gap under test conditions.' },
     ],
     stat1: 'Total Lessons', unit1: '',
     stat2: 'Corrections',
@@ -531,7 +535,18 @@ function applyLangUI() {
   document.getElementById('logout-btn').textContent = t('lockBtn2');
   // level
   document.getElementById('t-opic-label').textContent = t('opicLabel');
-  document.getElementById('t-opi-label').textContent = t('opiLabel');
+  document.getElementById('t-opi-label').textContent  = t('opiLabel');
+  if(lang==='ko'){
+    document.getElementById('t-opic-sub').textContent = 'Intermediate High';
+    document.getElementById('t-opi-sub').textContent  = 'Intermediate Mid';
+    document.getElementById('t-basis-label').textContent = '진단 기준';
+    document.getElementById('t-basis-text').innerHTML  = '원본 발화 70%<br>튜터 문법 피드백 30%';
+  } else {
+    document.getElementById('t-opic-sub').textContent = 'Intermediate High';
+    document.getElementById('t-opi-sub').textContent  = 'Intermediate Mid';
+    document.getElementById('t-basis-label').textContent = 'Basis';
+    document.getElementById('t-basis-text').innerHTML  = 'Speech 70%<br>Grammar feedback 30%';
+  }
   document.getElementById('t-goal-label').textContent = t('goalLabel');
   document.getElementById('t-chart-title').textContent = t('chartTitle');
   // stats
@@ -756,34 +771,50 @@ function renderFeedback() {
 }
 
 function renderLevelChart() {
-  const levels    = ['IM3','IH','AL','AL','AL','AL','AL','AL','AL','AL','AL'];
-  const opiLevels = ['IM3','IH','IH','IH','AM','AM','AM','AM','AM','AM','AM'];
+  // 원본 발화 70% + 튜터 문법 피드백 30% 기반 재산정
+  // OPIc: IM3(3/9) → IH(3/10~3/21) → IH+(3/26~4/10) → AL 진입 중(4/11~5/16)
+  // OPI:  IM1(3/9) → IM2(3/10) → IM3(3/21~4/10) → IM3+(4/11~5/16)
+  const levels    = ['IM3','IH','IH','IH','IH','AL','AL','AL','AL','AL','AL'];
+  const opiLevels = ['IM1','IM2','IM3','IM3','IM3','IM3','IM3','IM3','IM3','IM3','IM3'];
   const dates = ['03.09','03.10','03.21','03.26','04.10','04.11','04.19','04.26','05.01','05.10','05.16'];
   const order = ['IM1','IM2','IM3','IH','AL','AM','AH'];
   const W=700,H=160,PL=40,PR=50,PT=12,PB=32;
   const cw=W-PL-PR,ch=H-PT-PB,n=dates.length;
   const xs=dates.map((_,i)=>PL+(i/(n-1))*cw);
   const yFor=lvl=>PT+ch-(order.indexOf(lvl)/(order.length-1))*ch;
-  const ys1=levels.map(yFor),ys2=opiLevels.map(yFor),yGoal=yFor('AH');
+  const ys1=levels.map(yFor),ys2=opiLevels.map(yFor);
+  const yGoalOPIc=yFor('AL'), yGoalOPI=yFor('AH');
   function smooth(xa,ya){let d=`M ${xa[0]} ${ya[0]}`;for(let i=1;i<xa.length;i++){const mx=(xa[i-1]+xa[i])/2;d+=` C ${mx} ${ya[i-1]},${mx} ${ya[i]},${xa[i]} ${ya[i]}`;}return d;}
   const p1=smooth(xs,ys1),p2=smooth(xs,ys2);
   const a1=p1+` L ${xs[n-1]} ${PT+ch} L ${xs[0]} ${PT+ch} Z`;
   const a2=p2+` L ${xs[n-1]} ${PT+ch} L ${xs[0]} ${PT+ch} Z`;
-  const yLabels=order.map((lvl,i)=>{const y=PT+ch-(i/(order.length-1))*ch,isG=lvl==='AH';
-    return `<text x="${PL-6}" y="${y+4}" text-anchor="end" font-size="10" fill="${isG?'#1fc883':'#c8c8c8'}" font-weight="${isG?600:400}">${lvl}</text>
-    <line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="${isG?'#1fc88355':'#f2f2f2'}" stroke-width="${isG?1.5:1}" stroke-dasharray="${isG?'4 3':''}"/>`;
+  const yLabels=order.map((lvl,i)=>{
+    const y=PT+ch-(i/(order.length-1))*ch;
+    const isGoalAH=lvl==='AH', isGoalAL=lvl==='AL';
+    const col = isGoalAH?'#1fc883': isGoalAL?'#3182f6':'#c8c8c8';
+    const fw  = (isGoalAH||isGoalAL)?600:400;
+    const dash= isGoalAH?'4 3': isGoalAL?'6 3':'';
+    const sc  = isGoalAH?'#1fc88344': isGoalAL?'#3182f644':'#f2f2f2';
+    const sw  = (isGoalAH||isGoalAL)?1.5:1;
+    return `<text x="${PL-6}" y="${y+4}" text-anchor="end" font-size="10" fill="${col}" font-weight="${fw}">${lvl}</text>
+    <line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="${sc}" stroke-width="${sw}" stroke-dasharray="${dash}"/>`;
   }).join('');
   const dots1=xs.map((x,i)=>`<circle cx="${x}" cy="${ys1[i]}" r="4" fill="white" stroke="#3182f6" stroke-width="2"/>`).join('');
   const dots2=xs.map((x,i)=>`<circle cx="${x}" cy="${ys2[i]}" r="4" fill="white" stroke="#1fc883" stroke-width="2"/>`).join('');
   const xLabels=dates.map((d,i)=>(i%2===0||i===n-1)?`<text x="${xs[i]}" y="${H-6}" text-anchor="middle" font-size="10" fill="#8b8b8b">${d}</text>`:'').join('');
-  const ax=xs[n-1]+18,cy2=ys2[n-1],midY=(cy2+yGoal)/2;
+  const ax=xs[n-1]+18;
+  const cy1=ys1[n-1], cy2=ys2[n-1];
+  const midY1=(cy1+yGoalOPIc)/2, midY2=(cy2+yGoalOPI)/2;
   const goalTxt = t('chartGoal');
   document.getElementById('level-chart').innerHTML=`
     <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block" overflow="visible">
       <defs>
         <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3182f6" stop-opacity=".13"/><stop offset="100%" stop-color="#3182f6" stop-opacity="0"/></linearGradient>
         <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1fc883" stop-opacity=".10"/><stop offset="100%" stop-color="#1fc883" stop-opacity="0"/></linearGradient>
-        <marker id="arr" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+        <marker id="arr-b" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+          <path d="M1,6 L3.5,1 L6,6" fill="none" stroke="#3182f6" stroke-width="1.3" stroke-linecap="round"/>
+        </marker>
+        <marker id="arr-g" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
           <path d="M1,6 L3.5,1 L6,6" fill="none" stroke="#1fc883" stroke-width="1.3" stroke-linecap="round"/>
         </marker>
       </defs>
@@ -792,8 +823,10 @@ function renderLevelChart() {
       <path d="${p1}" fill="none" stroke="#3182f6" stroke-width="2.5"/>
       <path d="${p2}" fill="none" stroke="#1fc883" stroke-width="2.5" stroke-dasharray="5 3"/>
       ${dots2}${dots1}
-      <line x1="${ax}" y1="${cy2-2}" x2="${ax}" y2="${yGoal+7}" stroke="#1fc883" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#arr)"/>
-      <text x="${ax+6}" y="${midY+4}" font-size="9" fill="#1fc883" font-weight="600">${goalTxt}</text>
+      <line x1="${ax}" y1="${cy1-2}" x2="${ax}" y2="${yGoalOPIc+7}" stroke="#3182f6" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#arr-b)"/>
+      <text x="${ax+5}" y="${midY1+4}" font-size="9" fill="#3182f6" font-weight="600">AL목표</text>
+      <line x1="${ax+26}" y1="${cy2-2}" x2="${ax+26}" y2="${yGoalOPI+7}" stroke="#1fc883" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#arr-g)"/>
+      <text x="${ax+31}" y="${midY2+4}" font-size="9" fill="#1fc883" font-weight="600">AH목표</text>
     </svg>`;
 }
 

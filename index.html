@@ -594,7 +594,6 @@ document.getElementById('pw-btn').addEventListener('click', tryLogin);
 document.getElementById('pw-input').addEventListener('keydown', e => { if(e.key==='Enter') tryLogin(); });
 document.getElementById('logout-btn').addEventListener('click', lock);
 applyLangUI();
-if (sessionStorage.getItem(SESSION_KEY)) showDashboard();
 
 // ── DATA ──
 const BASE_LESSONS = [
@@ -628,6 +627,9 @@ function load() {
 }
 function save(d) { localStorage.setItem(DATA_KEY, JSON.stringify(d)); }
 let data = load();
+
+// 세션 유지 — data 선언 이후에 실행
+if (sessionStorage.getItem(SESSION_KEY)) showDashboard();
 
 // ── RENDER ──
 function renderAll() {

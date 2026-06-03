@@ -777,15 +777,6 @@ function renderAll() {
   renderFeedback();
 }
 
-function getLessons() {
-  const topics = t('lessonTopics');
-  const tags   = t('lessonTags');
-  const extra  = (data.extraLessons || []);
-  return [
-    ...BASE_LESSONS.map((l,i) => ({...l, topic: topics[i], tags: tags[i]})),
-    ...extra
-  ];
-}
 
 function renderStats() {
   const lessons = getLessons();

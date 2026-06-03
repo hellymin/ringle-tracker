@@ -1108,6 +1108,8 @@ let gdriveToken = null;
 async function openGDrivePicker() {
   const btn = document.getElementById('gdrive-btn');
   const listEl = document.getElementById('gdrive-list');
+  const statusMsg = document.getElementById('status-msg');
+  const prog = document.getElementById('prog');
 
   // Client ID 미설정 안내
   if (GDRIVE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID_HERE') {
@@ -1161,7 +1163,8 @@ async function openGDrivePicker() {
       setTimeout(() => { statusMsg.textContent = ''; }, 3000);
     }
   } catch(e) {
-    listEl.innerHTML = `<div class="gdrive-empty">❌ 드라이브 연결 실패: ${e.message}</div>`;
+    listEl.innerHTML = `<div class="gdrive-empty">❌ 드라이브 연결 실패: ${e.message}<br><small style="color:var(--gray400)">${e.stack ? e.stack.split('\n')[0] : ''}</small></div>`;
+    statusMsg.textContent = '❌ ' + e.message;
     gdriveToken = null;
   } finally {
     btn.disabled = false;
@@ -1170,9 +1173,8 @@ async function openGDrivePicker() {
 
 function getGDriveToken() {
   return new Promise((resolve, reject) => {
-    // Google Identity Services (GIS) 라이브러리 사용
     if (!window.google || !window.google.accounts) {
-      reject(new Error('Google 인증 라이브러리 로딩 중입니다. 잠시 후 다시 시도해주세요.'));
+      reject(new Error('Google 인증 라이브러리가 아직 로딩되지 않았어요. 잠시 후 다시 눌러주세요.'));
       return;
     }
     const client = window.google.accounts.oauth2.initTokenClient({
@@ -1180,22 +1182,35 @@ function getGDriveToken() {
       scope: GDRIVE_SCOPE,
       callback: (response) => {
         if (response.error) {
-          reject(new Error(response.error));
+          if (response.error === 'popup_closed_by_user') {
+            reject(new Error('로그인 팝업이 닫혔어요. 다시 눌러주세요.'));
+          } else if (response.error === 'access_denied') {
+            reject(new Error('접근이 거부됐어요. Google Cloud Console에서 테스트 사용자에 본인 계정을 추가했는지 확인해주세요.'));
+          } else {
+            reject(new Error(`인증 오류: ${response.error}`));
+          }
         } else {
           resolve(response.access_token);
         }
       },
+      error_callback: (err) => {
+        reject(new Error(`팝업 오류: ${err.type || JSON.stringify(err)}`));
+      }
     });
-    client.requestAccessToken();
+    client.requestAccessToken({ prompt: 'consent' });
   });
 }
 
 async function searchGDriveFiles(token) {
-  // 파일명에 "링글" 또는 "ringle" 포함된 PDF 검색
   const q = encodeURIComponent(`(name contains '링글' or name contains 'ringle' or name contains 'Ringle') and mimeType='application/pdf' and trashed=false`);
   const url = `https://www.googleapis.com/drive/v3/files?q=${q}&orderBy=modifiedTime desc&fields=files(id,name,modifiedTime,size)&pageSize=20`;
   const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-  if (!res.ok) throw new Error('파일 목록을 가져오지 못했어요');
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    const reason = errData?.error?.message || `HTTP ${res.status}`;
+    if (res.status === 403) throw new Error(`Drive API 권한 오류: ${reason} — Cloud Console에서 Google Drive API가 활성화되어 있는지 확인하세요.`);
+    throw new Error(`파일 목록 오류: ${reason}`);
+  }
   const data = await res.json();
   return data.files || [];
 }

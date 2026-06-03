@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mellinda's English Journey</title>
 <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -186,6 +187,78 @@ body { font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo',sans-serif; 
   .feedback-grid { grid-template-columns:1fr; }
 }
 
+/* ── CHART CONTROLS ── */
+.chart-controls {
+  display:flex; justify-content:space-between; align-items:flex-end;
+  margin-bottom:12px; flex-wrap:wrap; gap:10px;
+}
+.date-range-wrap { display:flex; flex-direction:column; gap:6px; }
+.date-range-label { font-size:11px; color:var(--gray500); font-weight:500; }
+.date-btns { display:flex; gap:5px; }
+.date-btn {
+  font-size:11px; font-weight:500; padding:4px 12px;
+  border-radius:20px; border:1.5px solid var(--gray300);
+  background:var(--white); color:var(--gray600);
+  cursor:pointer; font-family:inherit; transition:all .15s;
+}
+.date-btn:hover { border-color:var(--blue); color:var(--blue-text); }
+.date-btn.active { background:var(--blue); border-color:var(--blue); color:#fff; }
+.date-custom-wrap { display:flex; align-items:center; gap:6px; margin-top:2px; }
+.date-select {
+  font-size:11px; padding:3px 8px; border-radius:var(--r-sm);
+  border:1.5px solid var(--gray300); background:var(--white);
+  color:var(--gray700); font-family:inherit; cursor:pointer; outline:none;
+}
+.date-select:focus { border-color:var(--blue); }
+.date-sep { font-size:11px; color:var(--gray400); }
+
+.forecast-toggle { display:flex; align-items:center; gap:6px; cursor:pointer; }
+.forecast-toggle input { accent-color:var(--green); width:14px; height:14px; cursor:pointer; }
+.forecast-label { font-size:12px; color:var(--gray600); font-weight:500; }
+
+.progress-badge-wrap { margin-bottom:10px; }
+.progress-badge {
+  display:flex; align-items:center; gap:4px; flex-wrap:wrap;
+  background:var(--gray100); border-radius:var(--r-sm);
+  padding:7px 12px; min-height:30px;
+}
+
+/* ── GOOGLE DRIVE ── */
+.gdrive-btn {
+  width:100%; display:flex; align-items:center; justify-content:center; gap:8px;
+  padding:11px; border-radius:var(--r-md);
+  border:1.5px solid var(--gray300); background:var(--white);
+  font-size:13px; font-weight:600; color:var(--gray700);
+  cursor:pointer; font-family:inherit; transition:border-color .15s, background .15s;
+}
+.gdrive-btn:hover { border-color:var(--blue); background:var(--blue-light); color:var(--blue-text); }
+.gdrive-btn:disabled { opacity:0.5; cursor:not-allowed; }
+
+.upload-divider {
+  display:flex; align-items:center; gap:10px;
+  margin:12px 0; color:var(--gray400); font-size:12px;
+}
+.upload-divider::before, .upload-divider::after {
+  content:''; flex:1; height:1px; background:var(--gray300);
+}
+
+.gdrive-file-item {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:9px 12px; border-radius:var(--r-sm);
+  border:1px solid var(--gray200); margin-bottom:6px;
+  background:var(--gray100); transition:background .12s;
+}
+.gdrive-file-item:hover { background:var(--blue-light); border-color:var(--blue); }
+.gdrive-file-name { font-size:12px; color:var(--gray700); font-weight:500; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:8px; }
+.gdrive-file-date { font-size:11px; color:var(--gray500); white-space:nowrap; margin-right:8px; }
+.gdrive-use-btn {
+  font-size:11px; font-weight:600; padding:4px 10px;
+  border-radius:6px; border:none; background:var(--blue); color:#fff;
+  cursor:pointer; font-family:inherit; white-space:nowrap; flex-shrink:0;
+}
+.gdrive-use-btn:hover { background:#1a6ef0; }
+.gdrive-empty { font-size:12px; color:var(--gray500); text-align:center; padding:12px 0; }
+
 /* ── TOAST ── */
 #toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(6px); background:var(--gray900); color:#fff; font-size:13px; padding:11px 20px; border-radius:100px; white-space:nowrap; opacity:0; transition:opacity .2s,transform .2s; pointer-events:none; z-index:9999; }
 #toast.on { opacity:1; transform:translateX(-50%) translateY(0); }
@@ -270,6 +343,30 @@ body { font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo',sans-serif; 
         <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>OPI</div>
       </div>
     </div>
+    <!-- 날짜 선택 컨트롤 -->
+    <div class="chart-controls">
+      <div class="date-range-wrap">
+        <div class="date-range-label" id="t-range-label">기간 선택</div>
+        <div class="date-btns">
+          <button class="date-btn active" onclick="setChartRange('all')"   id="rbtn-all">전체</button>
+          <button class="date-btn"        onclick="setChartRange('3m')"    id="rbtn-3m">최근 3개월</button>
+          <button class="date-btn"        onclick="setChartRange('first')" id="rbtn-first">첫 수업~현재</button>
+        </div>
+        <div class="date-custom-wrap">
+          <select id="range-start" onchange="setChartRangeCustom()" class="date-select"></select>
+          <span class="date-sep">→</span>
+          <select id="range-end"   onchange="setChartRangeCustom()" class="date-select"></select>
+        </div>
+      </div>
+      <label class="forecast-toggle">
+        <input type="checkbox" id="forecast-check" onchange="toggleForecast(this.checked)">
+        <span class="forecast-label" id="t-forecast-label">📈 미래 예측 보기</span>
+      </label>
+    </div>
+    <!-- 진전도 뱃지 -->
+    <div class="progress-badge-wrap">
+      <div class="progress-badge" id="progress-badge"></div>
+    </div>
     <div id="level-chart"></div>
   </div>
 
@@ -314,10 +411,20 @@ body { font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo',sans-serif; 
       <div class="card">
         <div class="card-head"><span class="card-title" id="t-upload-title">새 수업 추가</span></div>
         <div class="card-body-pad">
+          <!-- 구글 드라이브 버튼 -->
+          <button class="gdrive-btn" id="gdrive-btn" onclick="openGDrivePicker()">
+            <img src="https://www.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png" width="18" height="18" alt="Google Drive">
+            <span id="t-gdrive-btn">구글 드라이브에서 불러오기</span>
+          </button>
+          <!-- 파일 목록 -->
+          <div id="gdrive-list" style="display:none;margin-top:10px"></div>
+          <!-- 구분선 -->
+          <div class="upload-divider"><span id="t-or">또는</span></div>
+          <!-- 로컬 업로드 -->
           <div class="upload-zone" id="upload-zone">
             <input type="file" id="pdf-input" accept=".pdf">
             <div class="uz-icon">📄</div>
-            <div class="uz-title" id="t-uz-title">PDF 업로드</div>
+            <div class="uz-title" id="t-uz-title">로컬 PDF 업로드</div>
             <div class="uz-sub" id="t-uz-sub">링글 피드백 PDF를 올려주세요</div>
           </div>
           <div class="prog-wrap" id="prog"><div class="prog-inner"></div></div>
@@ -388,6 +495,11 @@ const I18N = {
     uploadTitle: '새 수업 추가',
     uzTitle: 'PDF 업로드',
     uzSub: '링글 피드백 PDF를 올려주세요',
+    gdriveBtn: '구글 드라이브에서 불러오기',
+    gdriveLoading: '드라이브 파일 목록 불러오는 중...',
+    gdriveEmpty: '링글 PDF 파일을 찾지 못했어요. 드라이브에 파일이 있는지 확인해주세요.',
+    gdriveAnalyzing: '드라이브에서 PDF 읽는 중...',
+    orDivider: '또는',
     errTitle: '반복 오류 패턴',
     strTitle: '강점 지표',
     vocabTitle: '습득 표현 사전',
@@ -467,6 +579,11 @@ const I18N = {
     uploadTitle: 'Add New Lesson',
     uzTitle: 'Upload PDF',
     uzSub: 'Drop your Ringle feedback PDF here',
+    gdriveBtn: 'Import from Google Drive',
+    gdriveLoading: 'Loading files from Drive...',
+    gdriveEmpty: 'No Ringle PDF files found. Please check your Drive.',
+    gdriveAnalyzing: 'Reading PDF from Drive...',
+    orDivider: 'or',
     errTitle: 'Recurring Error Patterns',
     strTitle: 'Strength Indicators',
     vocabTitle: 'Expression Dictionary',
@@ -517,58 +634,60 @@ function t(key) { return I18N[lang][key]; }
 function setLang(l) {
   lang = l;
   localStorage.setItem('mellinda_lang', l);
-  document.getElementById('btn-ko').classList.toggle('active', l === 'ko');
-  document.getElementById('btn-en').classList.toggle('active', l === 'en');
-  applyLangUI();
   renderAll();
+  applyLangUI();
 }
 
 function applyLangUI() {
+  const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  const setHTML = (id, val) => { const el = document.getElementById(id); if(el) el.innerHTML = val; };
+
   // lock screen
-  document.getElementById('lock-sub-text').textContent = t('lockSub');
-  document.getElementById('pw-btn').textContent = t('lockBtn');
-  document.getElementById('lock-hint-text').textContent = t('lockHint');
+  set('lock-sub-text', t('lockSub'));
+  set('pw-btn', t('lockBtn'));
+  set('lock-hint-text', t('lockHint'));
   // header
-  document.getElementById('t-eyebrow').textContent = t('eyebrow');
-  document.getElementById('t-sub').textContent = t('sub');
-  document.getElementById('t-private-badge').textContent = t('privateBadge');
-  document.getElementById('logout-btn').textContent = t('lockBtn2');
+  set('t-eyebrow', t('eyebrow'));
+  set('t-sub', t('sub'));
+  set('t-private-badge', t('privateBadge'));
+  set('logout-btn', t('lockBtn2'));
   // level
-  document.getElementById('t-opic-label').textContent = t('opicLabel');
-  document.getElementById('t-opi-label').textContent  = t('opiLabel');
-  if(lang==='ko'){
-    document.getElementById('t-opic-sub').textContent = 'Intermediate High';
-    document.getElementById('t-opi-sub').textContent  = 'Intermediate Mid';
-    document.getElementById('t-basis-label').textContent = '진단 기준';
-    document.getElementById('t-basis-text').innerHTML  = '원본 발화 70%<br>튜터 문법 피드백 30%';
-  } else {
-    document.getElementById('t-opic-sub').textContent = 'Intermediate High';
-    document.getElementById('t-opi-sub').textContent  = 'Intermediate Mid';
-    document.getElementById('t-basis-label').textContent = 'Basis';
-    document.getElementById('t-basis-text').innerHTML  = 'Speech 70%<br>Grammar feedback 30%';
-  }
-  document.getElementById('t-goal-label').textContent = t('goalLabel');
-  document.getElementById('t-chart-title').textContent = t('chartTitle');
+  set('t-opic-label', t('opicLabel'));
+  set('t-opi-label',  t('opiLabel'));
+  set('t-opic-sub',   'Intermediate High');
+  set('t-opi-sub',    'Intermediate Mid');
+  set('t-basis-label', lang==='ko' ? '진단 기준' : 'Basis');
+  setHTML('t-basis-text', lang==='ko'
+    ? '원본 발화 70%<br>튜터 문법 피드백 30%'
+    : 'Speech 70%<br>Grammar feedback 30%');
+  set('t-goal-label',   t('goalLabel'));
+  set('t-chart-title',  t('chartTitle'));
   // stats
-  document.getElementById('t-stat1').textContent = t('stat1');
-  document.getElementById('t-unit1').textContent = t('unit1');
-  document.getElementById('t-stat2').textContent = t('stat2');
-  document.getElementById('t-stat3').textContent = t('stat3');
-  document.getElementById('t-unit3').textContent = t('unit3');
-  document.getElementById('t-stat4').textContent = t('stat4');
-  document.getElementById('t-unit4').textContent = t('unit4');
+  set('t-stat1', t('stat1')); set('t-unit1', t('unit1'));
+  set('t-stat2', t('stat2'));
+  set('t-stat3', t('stat3')); set('t-unit3', t('unit3'));
+  set('t-stat4', t('stat4')); set('t-unit4', t('unit4'));
   // cards
-  document.getElementById('t-lesson-title').textContent = t('lessonTitle');
-  document.getElementById('t-upload-title').textContent = t('uploadTitle');
-  document.getElementById('t-uz-title').textContent = t('uzTitle');
-  document.getElementById('t-uz-sub').textContent = t('uzSub');
-  document.getElementById('t-err-title').textContent = t('errTitle');
-  document.getElementById('t-str-title').textContent = t('strTitle');
-  document.getElementById('t-vocab-title').textContent = t('vocabTitle');
+  set('t-lesson-title',  t('lessonTitle'));
+  set('t-upload-title',  t('uploadTitle'));
+  set('t-uz-title',      t('uzTitle'));
+  set('t-uz-sub',        t('uzSub'));
+  set('t-gdrive-btn',    t('gdriveBtn'));
+  set('t-or',            t('orDivider'));
+  set('t-err-title',     t('errTitle'));
+  set('t-str-title',     t('strTitle'));
+  set('t-vocab-title',   t('vocabTitle'));
   // feedback
-  document.getElementById('t-fb-title').textContent = t('fbTitle');
-  document.getElementById('t-fb-col1').textContent = t('fbCol1');
-  document.getElementById('t-fb-col2').textContent = t('fbCol2');
+  set('t-fb-title', t('fbTitle'));
+  set('t-fb-col1',  t('fbCol1'));
+  set('t-fb-col2',  t('fbCol2'));
+  // chart controls (렌더 후에만 존재)
+  if (document.getElementById('t-range-label')) applyChartControlLang();
+  // lang 버튼 활성화
+  const btnKo = document.getElementById('btn-ko');
+  const btnEn = document.getElementById('btn-en');
+  if (btnKo) btnKo.classList.toggle('active', lang === 'ko');
+  if (btnEn) btnEn.classList.toggle('active', lang === 'en');
 }
 
 // ── AUTH ──
@@ -595,8 +714,8 @@ async function tryLogin() {
 function showDashboard() {
   document.getElementById('lock-screen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
-  applyLangUI();
-  renderAll();
+  renderAll();       // 먼저 DOM 전체 렌더
+  applyLangUI();     // 렌더 완료 후 언어 적용
 }
 function lock() {
   sessionStorage.removeItem(SESSION_KEY);
@@ -653,19 +772,11 @@ function renderAll() {
   renderErrors();
   renderStrengths();
   renderVocab();
+  initChartControls();
   renderLevelChart();
   renderFeedback();
 }
 
-function getLessons() {
-  const topics = t('lessonTopics');
-  const tags   = t('lessonTags');
-  const extra  = (data.extraLessons || []);
-  return [
-    ...BASE_LESSONS.map((l,i) => ({...l, topic: topics[i], tags: tags[i]})),
-    ...extra
-  ];
-}
 
 function renderStats() {
   const lessons = getLessons();
@@ -770,64 +881,347 @@ function renderFeedback() {
   });
 }
 
+// ── CHART STATE ──
+// 전체 레벨 데이터 (실제 수업 기록)
+const LEVEL_DATA = [
+  {date:'03.09', opic:'IM3', opi:'IM1'},
+  {date:'03.10', opic:'IH',  opi:'IM2'},
+  {date:'03.21', opic:'IH',  opi:'IM3'},
+  {date:'03.26', opic:'IH',  opi:'IM3'},
+  {date:'04.10', opic:'IH',  opi:'IM3'},
+  {date:'04.11', opic:'AL',  opi:'IM3'},
+  {date:'04.19', opic:'AL',  opi:'IM3'},
+  {date:'04.26', opic:'AL',  opi:'IM3'},
+  {date:'05.01', opic:'AL',  opi:'IM3'},
+  {date:'05.10', opic:'AL',  opi:'IM3'},
+  {date:'05.16', opic:'AL',  opi:'IM3'},
+];
+
+// 미래 예측 (수업 추가 시 자동 연장)
+const FORECAST_DATA = [
+  {date:'06.01', opic:'AL',  opi:'IH',  forecast:true},
+  {date:'07.01', opic:'AL',  opi:'IH',  forecast:true},
+  {date:'08.01', opic:'AM',  opi:'AL',  forecast:true},
+  {date:'09.01', opic:'AM',  opi:'AL',  forecast:true},
+  {date:'10.01', opic:'AM',  opi:'AM',  forecast:true},
+  {date:'12.01', opic:'AH',  opi:'AH',  forecast:true},
+];
+
+let chartRange = {start: 0, end: LEVEL_DATA.length - 1, showForecast: false};
+
 function renderLevelChart() {
-  // 원본 발화 70% + 튜터 문법 피드백 30% 기반 재산정
-  // OPIc: IM3(3/9) → IH(3/10~3/21) → IH+(3/26~4/10) → AL 진입 중(4/11~5/16)
-  // OPI:  IM1(3/9) → IM2(3/10) → IM3(3/21~4/10) → IM3+(4/11~5/16)
-  const levels    = ['IM3','IH','IH','IH','IH','AL','AL','AL','AL','AL','AL'];
-  const opiLevels = ['IM1','IM2','IM3','IM3','IM3','IM3','IM3','IM3','IM3','IM3','IM3'];
-  const dates = ['03.09','03.10','03.21','03.26','04.10','04.11','04.19','04.26','05.01','05.10','05.16'];
+  const allReal = LEVEL_DATA;
+  const allData = chartRange.showForecast
+    ? [...LEVEL_DATA, ...FORECAST_DATA]
+    : LEVEL_DATA;
+
+  // 선택 범위 슬라이싱 (미래 예측은 항상 끝에 붙음)
+  const realSlice = allReal.slice(chartRange.start, chartRange.end + 1);
+  const displayData = chartRange.showForecast
+    ? [...realSlice, ...FORECAST_DATA]
+    : realSlice;
+
   const order = ['IM1','IM2','IM3','IH','AL','AM','AH'];
-  const W=700,H=160,PL=40,PR=50,PT=12,PB=32;
-  const cw=W-PL-PR,ch=H-PT-PB,n=dates.length;
-  const xs=dates.map((_,i)=>PL+(i/(n-1))*cw);
-  const yFor=lvl=>PT+ch-(order.indexOf(lvl)/(order.length-1))*ch;
-  const ys1=levels.map(yFor),ys2=opiLevels.map(yFor);
-  const yGoalOPIc=yFor('AL'), yGoalOPI=yFor('AH');
-  function smooth(xa,ya){let d=`M ${xa[0]} ${ya[0]}`;for(let i=1;i<xa.length;i++){const mx=(xa[i-1]+xa[i])/2;d+=` C ${mx} ${ya[i-1]},${mx} ${ya[i]},${xa[i]} ${ya[i]}`;}return d;}
-  const p1=smooth(xs,ys1),p2=smooth(xs,ys2);
-  const a1=p1+` L ${xs[n-1]} ${PT+ch} L ${xs[0]} ${PT+ch} Z`;
-  const a2=p2+` L ${xs[n-1]} ${PT+ch} L ${xs[0]} ${PT+ch} Z`;
-  const yLabels=order.map((lvl,i)=>{
-    const y=PT+ch-(i/(order.length-1))*ch;
-    const isGoalAH=lvl==='AH', isGoalAL=lvl==='AL';
-    const col = isGoalAH?'#1fc883': isGoalAL?'#3182f6':'#c8c8c8';
-    const fw  = (isGoalAH||isGoalAL)?600:400;
-    const dash= isGoalAH?'4 3': isGoalAL?'6 3':'';
-    const sc  = isGoalAH?'#1fc88344': isGoalAL?'#3182f644':'#f2f2f2';
-    const sw  = (isGoalAH||isGoalAL)?1.5:1;
+  const W=740, H=170, PL=40, PR=60, PT=12, PB=32;
+  const cw=W-PL-PR, ch=H-PT-PB, n=displayData.length;
+  const xs = displayData.map((_,i) => PL + (i/(n-1))*cw);
+  const yFor = lvl => PT + ch - (order.indexOf(lvl)/(order.length-1))*ch;
+
+  const ys1 = displayData.map(d => yFor(d.opic));
+  const ys2 = displayData.map(d => yFor(d.opi));
+  const yGoalOPIc = yFor('AL');
+  const yGoalOPI  = yFor('AH');
+
+  // 실제 데이터와 예측 경계 인덱스
+  const splitIdx = realSlice.length - 1;
+
+  function smooth(xa, ya, fromIdx, toIdx) {
+    let d = `M ${xa[fromIdx]} ${ya[fromIdx]}`;
+    for (let i = fromIdx+1; i <= toIdx; i++) {
+      const mx = (xa[i-1]+xa[i])/2;
+      d += ` C ${mx} ${ya[i-1]},${mx} ${ya[i]},${xa[i]} ${ya[i]}`;
+    }
+    return d;
+  }
+
+  // 실선 경로 (실제 데이터)
+  const p1real = smooth(xs, ys1, 0, splitIdx);
+  const p2real = smooth(xs, ys2, 0, splitIdx);
+  // 예측 점선 경로
+  const p1fore = chartRange.showForecast && n > splitIdx+1 ? smooth(xs, ys1, splitIdx, n-1) : '';
+  const p2fore = chartRange.showForecast && n > splitIdx+1 ? smooth(xs, ys2, splitIdx, n-1) : '';
+
+  const a1 = p1real + ` L ${xs[splitIdx]} ${PT+ch} L ${xs[0]} ${PT+ch} Z`;
+  const a2 = p2real + ` L ${xs[splitIdx]} ${PT+ch} L ${xs[0]} ${PT+ch} Z`;
+
+  // 진전도 계산
+  const startOPIc = order.indexOf(realSlice[0].opic);
+  const endOPIc   = order.indexOf(realSlice[realSlice.length-1].opic);
+  const startOPI  = order.indexOf(realSlice[0].opi);
+  const endOPI    = order.indexOf(realSlice[realSlice.length-1].opi);
+  const progressOPIc = endOPIc - startOPIc;
+  const progressOPI  = endOPI  - startOPI;
+
+  // Y축 레이블
+  const yLabels = order.map((lvl,i) => {
+    const y = PT+ch-(i/(order.length-1))*ch;
+    const isAH = lvl==='AH', isAL = lvl==='AL';
+    const col  = isAH?'#1fc883': isAL?'#3182f6':'#c8c8c8';
+    const fw   = (isAH||isAL)?600:400;
+    const dash = isAH?'4 3': isAL?'6 3':'';
+    const sc   = isAH?'#1fc88344': isAL?'#3182f644':'#f2f2f2';
     return `<text x="${PL-6}" y="${y+4}" text-anchor="end" font-size="10" fill="${col}" font-weight="${fw}">${lvl}</text>
-    <line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="${sc}" stroke-width="${sw}" stroke-dasharray="${dash}"/>`;
+    <line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="${sc}" stroke-width="${(isAH||isAL)?1.5:1}" stroke-dasharray="${dash}"/>`;
   }).join('');
-  const dots1=xs.map((x,i)=>`<circle cx="${x}" cy="${ys1[i]}" r="4" fill="white" stroke="#3182f6" stroke-width="2"/>`).join('');
-  const dots2=xs.map((x,i)=>`<circle cx="${x}" cy="${ys2[i]}" r="4" fill="white" stroke="#1fc883" stroke-width="2"/>`).join('');
-  const xLabels=dates.map((d,i)=>(i%2===0||i===n-1)?`<text x="${xs[i]}" y="${H-6}" text-anchor="middle" font-size="10" fill="#8b8b8b">${d}</text>`:'').join('');
-  const ax=xs[n-1]+18;
-  const cy1=ys1[n-1], cy2=ys2[n-1];
-  const midY1=(cy1+yGoalOPIc)/2, midY2=(cy2+yGoalOPI)/2;
-  const goalTxt = t('chartGoal');
-  document.getElementById('level-chart').innerHTML=`
+
+  // X축 레이블
+  const xLabels = displayData.map((d,i) => {
+    const show = i===0 || i===splitIdx || i===n-1 || (n<=8) || i%2===0;
+    const col  = d.forecast ? '#c8c8c8' : '#8b8b8b';
+    return show ? `<text x="${xs[i]}" y="${H-6}" text-anchor="middle" font-size="10" fill="${col}">${d.date}</text>` : '';
+  }).join('');
+
+  // 실제 데이터 점
+  const dots1real = realSlice.map((_,i) => `<circle cx="${xs[i]}" cy="${ys1[i]}" r="4" fill="white" stroke="#3182f6" stroke-width="2"/>`).join('');
+  const dots2real = realSlice.map((_,i) => `<circle cx="${xs[i]}" cy="${ys2[i]}" r="4" fill="white" stroke="#1fc883" stroke-width="2"/>`).join('');
+  // 예측 데이터 점 (비어있는 원)
+  const dots1fore = chartRange.showForecast ? FORECAST_DATA.map((_,i) => {
+    const idx = realSlice.length + i;
+    return `<circle cx="${xs[idx]}" cy="${ys1[idx]}" r="3.5" fill="white" stroke="#3182f688" stroke-width="1.5" stroke-dasharray="2 1"/>`;
+  }).join('') : '';
+  const dots2fore = chartRange.showForecast ? FORECAST_DATA.map((_,i) => {
+    const idx = realSlice.length + i;
+    return `<circle cx="${xs[idx]}" cy="${ys2[idx]}" r="3.5" fill="white" stroke="#1fc88388" stroke-width="1.5" stroke-dasharray="2 1"/>`;
+  }).join('') : '';
+
+  // 예측 구간 배경
+  const forecastBg = chartRange.showForecast && n > splitIdx+1
+    ? `<rect x="${xs[splitIdx]}" y="${PT}" width="${xs[n-1]-xs[splitIdx]}" height="${ch}" fill="#f9f9f9" opacity="0.7"/>
+       <line x1="${xs[splitIdx]}" y1="${PT}" x2="${xs[splitIdx]}" y2="${PT+ch}" stroke="#e5e5e5" stroke-width="1" stroke-dasharray="4 2"/>
+       <text x="${xs[splitIdx]+6}" y="${PT+10}" font-size="9" fill="#c8c8c8">${lang==='ko'?'예측':'Forecast'}</text>`
+    : '';
+
+  // 목표 화살표
+  const ax = xs[n-1] + 16;
+  const cy1e = ys1[n-1], cy2e = ys2[n-1];
+  const midY1 = (cy1e + yGoalOPIc)/2, midY2 = (cy2e + yGoalOPI)/2;
+
+  // 진전도 뱃지 업데이트
+  updateProgressBadge(progressOPIc, progressOPI, realSlice[0].date, realSlice[realSlice.length-1].date, order, realSlice[0], realSlice[realSlice.length-1]);
+
+  document.getElementById('level-chart').innerHTML = `
     <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block" overflow="visible">
       <defs>
         <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3182f6" stop-opacity=".13"/><stop offset="100%" stop-color="#3182f6" stop-opacity="0"/></linearGradient>
         <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1fc883" stop-opacity=".10"/><stop offset="100%" stop-color="#1fc883" stop-opacity="0"/></linearGradient>
-        <marker id="arr-b" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
-          <path d="M1,6 L3.5,1 L6,6" fill="none" stroke="#3182f6" stroke-width="1.3" stroke-linecap="round"/>
-        </marker>
-        <marker id="arr-g" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
-          <path d="M1,6 L3.5,1 L6,6" fill="none" stroke="#1fc883" stroke-width="1.3" stroke-linecap="round"/>
-        </marker>
+        <marker id="arr-b" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M1,6 L3.5,1 L6,6" fill="none" stroke="#3182f6" stroke-width="1.3" stroke-linecap="round"/></marker>
+        <marker id="arr-g" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M1,6 L3.5,1 L6,6" fill="none" stroke="#1fc883" stroke-width="1.3" stroke-linecap="round"/></marker>
       </defs>
+      ${forecastBg}
       ${yLabels}${xLabels}
-      <path d="${a1}" fill="url(#g1)"/><path d="${a2}" fill="url(#g2)"/>
-      <path d="${p1}" fill="none" stroke="#3182f6" stroke-width="2.5"/>
-      <path d="${p2}" fill="none" stroke="#1fc883" stroke-width="2.5" stroke-dasharray="5 3"/>
-      ${dots2}${dots1}
-      <line x1="${ax}" y1="${cy1-2}" x2="${ax}" y2="${yGoalOPIc+7}" stroke="#3182f6" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#arr-b)"/>
-      <text x="${ax+5}" y="${midY1+4}" font-size="9" fill="#3182f6" font-weight="600">AL목표</text>
-      <line x1="${ax+26}" y1="${cy2-2}" x2="${ax+26}" y2="${yGoalOPI+7}" stroke="#1fc883" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#arr-g)"/>
-      <text x="${ax+31}" y="${midY2+4}" font-size="9" fill="#1fc883" font-weight="600">AH목표</text>
+      <path d="${a1}" fill="url(#g1)"/>
+      <path d="${a2}" fill="url(#g2)"/>
+      <path d="${p1real}" fill="none" stroke="#3182f6" stroke-width="2.5"/>
+      <path d="${p2real}" fill="none" stroke="#1fc883" stroke-width="2.5" stroke-dasharray="5 3"/>
+      ${p1fore ? `<path d="${p1fore}" fill="none" stroke="#3182f688" stroke-width="1.8" stroke-dasharray="6 3"/>` : ''}
+      ${p2fore ? `<path d="${p2fore}" fill="none" stroke="#1fc88388" stroke-width="1.8" stroke-dasharray="6 3"/>` : ''}
+      ${dots2real}${dots1real}${dots2fore}${dots1fore}
+      <line x1="${ax}" y1="${cy1e-2}" x2="${ax}" y2="${yGoalOPIc+7}" stroke="#3182f6" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#arr-b)"/>
+      <text x="${ax+4}" y="${midY1+4}" font-size="9" fill="#3182f6" font-weight="600">AL</text>
+      <line x1="${ax+20}" y1="${cy2e-2}" x2="${ax+20}" y2="${yGoalOPI+7}" stroke="#1fc883" stroke-width="1.5" stroke-dasharray="3 2" marker-end="url(#arr-g)"/>
+      <text x="${ax+24}" y="${midY2+4}" font-size="9" fill="#1fc883" font-weight="600">AH</text>
     </svg>`;
+}
+
+function updateProgressBadge(dOPIc, dOPI, startDate, endDate, order, startItem, endItem) {
+  const el = document.getElementById('progress-badge');
+  if (!el) return;
+  const arrow = n => n > 0 ? `▲${n}` : n < 0 ? `▼${Math.abs(n)}` : '─';
+  const col1 = dOPIc > 0 ? 'var(--blue-text)' : dOPIc < 0 ? 'var(--orange-text)' : 'var(--gray500)';
+  const col2 = dOPI  > 0 ? 'var(--green-text)': dOPI  < 0 ? 'var(--orange-text)' : 'var(--gray500)';
+  el.innerHTML = `
+    <span style="font-size:11px;color:var(--gray500)">${startDate} → ${endDate}&nbsp;&nbsp;</span>
+    <span style="font-size:12px;font-weight:600;color:${col1}">OPIc ${startItem.opic}→${endItem.opic} ${arrow(dOPIc)}</span>
+    <span style="margin:0 6px;color:var(--gray300)">|</span>
+    <span style="font-size:12px;font-weight:600;color:${col2}">OPI ${startItem.opi}→${endItem.opi} ${arrow(dOPI)}</span>`;
+}
+
+// ── CHART CONTROLS ──
+function initChartControls() {
+  const startSel = document.getElementById('range-start');
+  const endSel   = document.getElementById('range-end');
+  startSel.innerHTML = '';
+  endSel.innerHTML   = '';
+  LEVEL_DATA.forEach((d,i) => {
+    startSel.innerHTML += `<option value="${i}">${d.date}</option>`;
+    endSel.innerHTML   += `<option value="${i}">${d.date}</option>`;
+  });
+  startSel.value = 0;
+  endSel.value   = LEVEL_DATA.length - 1;
+  applyChartControlLang();
+}
+
+function applyChartControlLang() {
+  const isKo = lang === 'ko';
+  document.getElementById('t-range-label').textContent    = isKo ? '기간 선택' : 'Date Range';
+  document.getElementById('rbtn-all').textContent         = isKo ? '전체' : 'All';
+  document.getElementById('rbtn-3m').textContent          = isKo ? '최근 3개월' : 'Last 3M';
+  document.getElementById('rbtn-first').textContent       = isKo ? '첫 수업~현재' : 'First~Now';
+  document.getElementById('t-forecast-label').textContent = isKo ? '📈 미래 예측 보기' : '📈 Show Forecast';
+}
+
+function setChartRange(type) {
+  const n = LEVEL_DATA.length;
+  if (type === 'all')   { chartRange.start = 0;    chartRange.end = n-1; }
+  if (type === '3m')    { chartRange.start = Math.max(0, n-6); chartRange.end = n-1; }
+  if (type === 'first') { chartRange.start = 0;    chartRange.end = n-1; }
+  document.getElementById('range-start').value = chartRange.start;
+  document.getElementById('range-end').value   = chartRange.end;
+  ['all','3m','first'].forEach(k => document.getElementById(`rbtn-${k}`).classList.remove('active'));
+  document.getElementById(`rbtn-${type}`).classList.add('active');
+  renderLevelChart();
+}
+
+function setChartRangeCustom() {
+  const s = parseInt(document.getElementById('range-start').value);
+  const e = parseInt(document.getElementById('range-end').value);
+  chartRange.start = Math.min(s, e);
+  chartRange.end   = Math.max(s, e);
+  ['all','3m','first'].forEach(k => document.getElementById(`rbtn-${k}`).classList.remove('active'));
+  renderLevelChart();
+}
+
+function toggleForecast(val) {
+  chartRange.showForecast = val;
+  renderLevelChart();
+}
+
+
+// Google Drive API용 OAuth2 설정
+// ※ 사용 전 https://console.cloud.google.com 에서 OAuth Client ID를 발급받아
+//   아래 GDRIVE_CLIENT_ID에 입력하세요
+const GDRIVE_CLIENT_ID = '1038065097730-q0i8cim18nbl92fdhv84p9ctjp56fftg.apps.googleusercontent.com';
+const GDRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.readonly';
+
+let gdriveToken = null;
+
+async function openGDrivePicker() {
+  const btn = document.getElementById('gdrive-btn');
+  const listEl = document.getElementById('gdrive-list');
+
+  // Client ID 미설정 안내
+  if (GDRIVE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID_HERE') {
+    listEl.style.display = 'block';
+    listEl.innerHTML = `<div class="gdrive-empty">
+      ⚙️ 구글 드라이브 연동을 위해 <b>Google Cloud Console</b>에서<br>
+      OAuth Client ID를 발급받아 파일의 <code>GDRIVE_CLIENT_ID</code>에 입력해주세요.<br>
+      <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:var(--blue)">Console 바로가기 →</a>
+    </div>`;
+    return;
+  }
+
+  btn.disabled = true;
+  listEl.style.display = 'block';
+  listEl.innerHTML = `<div class="gdrive-empty">${t('gdriveLoading')}</div>`;
+
+  try {
+    // OAuth 토큰 획득
+    if (!gdriveToken) {
+      gdriveToken = await getGDriveToken();
+    }
+    // 링글 PDF 파일 검색
+    const files = await searchGDriveFiles(gdriveToken);
+    renderGDriveList(files, listEl);
+  } catch(e) {
+    listEl.innerHTML = `<div class="gdrive-empty">❌ 드라이브 연결 실패: ${e.message}</div>`;
+    gdriveToken = null;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function getGDriveToken() {
+  return new Promise((resolve, reject) => {
+    // Google Identity Services (GIS) 라이브러리 사용
+    if (!window.google || !window.google.accounts) {
+      reject(new Error('Google 인증 라이브러리 로딩 중입니다. 잠시 후 다시 시도해주세요.'));
+      return;
+    }
+    const client = window.google.accounts.oauth2.initTokenClient({
+      client_id: GDRIVE_CLIENT_ID,
+      scope: GDRIVE_SCOPE,
+      callback: (response) => {
+        if (response.error) {
+          reject(new Error(response.error));
+        } else {
+          resolve(response.access_token);
+        }
+      },
+    });
+    client.requestAccessToken();
+  });
+}
+
+async function searchGDriveFiles(token) {
+  // 파일명에 "링글" 또는 "ringle" 포함된 PDF 검색
+  const q = encodeURIComponent(`(name contains '링글' or name contains 'ringle' or name contains 'Ringle') and mimeType='application/pdf' and trashed=false`);
+  const url = `https://www.googleapis.com/drive/v3/files?q=${q}&orderBy=modifiedTime desc&fields=files(id,name,modifiedTime,size)&pageSize=20`;
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error('파일 목록을 가져오지 못했어요');
+  const data = await res.json();
+  return data.files || [];
+}
+
+function renderGDriveList(files, listEl) {
+  if (!files.length) {
+    listEl.innerHTML = `<div class="gdrive-empty">${t('gdriveEmpty')}</div>`;
+    return;
+  }
+  listEl.innerHTML = files.map(f => {
+    const date = new Date(f.modifiedTime).toLocaleDateString('ko-KR', {month:'2-digit', day:'2-digit'});
+    const name = f.name.replace('.pdf','').replace('_링글_일대일_화상영어','').replace('링글_일대일_화상영어_','');
+    return `<div class="gdrive-file-item">
+      <span class="gdrive-file-name" title="${f.name}">📄 ${name}</span>
+      <span class="gdrive-file-date">${date}</span>
+      <button class="gdrive-use-btn" onclick="analyzeGDriveFile('${f.id}','${f.name.replace(/'/g,'')}')">${lang==='ko'?'분석':'Analyze'}</button>
+    </div>`;
+  }).join('');
+}
+
+async function analyzeGDriveFile(fileId, fileName) {
+  const prog = document.getElementById('prog');
+  const statusMsg = document.getElementById('status-msg');
+  prog.classList.add('on');
+  statusMsg.textContent = t('gdriveAnalyzing');
+
+  try {
+    // Drive에서 PDF 바이너리 다운로드
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+      headers: { Authorization: `Bearer ${gdriveToken}` }
+    });
+    if (!res.ok) throw new Error('파일 다운로드 실패');
+    const blob = await res.blob();
+
+    // Blob → base64
+    const b64 = await new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => resolve(fr.result.split(',')[1]);
+      fr.onerror = reject;
+      fr.readAsDataURL(blob);
+    });
+
+    statusMsg.textContent = t('analyzing2');
+
+    // Claude API 분석 (기존 analyze 함수와 동일한 로직)
+    await analyzeBase64(b64, fileName);
+
+  } catch(e) {
+    statusMsg.textContent = t('analyzeFail');
+    console.error(e);
+  } finally {
+    prog.classList.remove('on');
+    setTimeout(() => { statusMsg.textContent = ''; }, 2500);
+  }
 }
 
 // ── UPLOAD ──
@@ -837,20 +1231,30 @@ const prog=document.getElementById('prog');
 const statusMsg=document.getElementById('status-msg');
 zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag');});
 zone.addEventListener('dragleave',()=>zone.classList.remove('drag'));
-zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag');if(e.dataTransfer.files[0])analyze(e.dataTransfer.files[0]);});
-pdfInput.addEventListener('change',e=>{if(e.target.files[0])analyze(e.target.files[0]);});
+zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag');if(e.dataTransfer.files[0])analyzeFile(e.dataTransfer.files[0]);});
+pdfInput.addEventListener('change',e=>{if(e.target.files[0])analyzeFile(e.target.files[0]);});
 
-async function analyze(file) {
+async function analyzeFile(file) {
   prog.classList.add('on'); statusMsg.textContent=t('analyzing1'); pdfInput.disabled=true;
   try {
     const b64=await new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result.split(',')[1]);fr.onerror=rej;fr.readAsDataURL(file);});
     statusMsg.textContent=t('analyzing2');
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,
-        messages:[{role:'user',content:[
-          {type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},
-          {type:'text',text:`Analyze this Ringle English tutoring feedback PDF for Korean learner Mellinda.
+    await analyzeBase64(b64, file.name);
+  } catch(e) {
+    statusMsg.textContent=t('analyzeFail'); console.error(e);
+  } finally {
+    prog.classList.remove('on'); pdfInput.disabled=false; pdfInput.value='';
+    setTimeout(()=>{statusMsg.textContent='';},2500);
+  }
+}
+
+async function analyzeBase64(b64, fileName) {
+  const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,
+      messages:[{role:'user',content:[
+        {type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},
+        {type:'text',text:`Analyze this Ringle English tutoring feedback PDF for Korean learner Mellinda.
 Return ONLY valid JSON, no markdown:
 {
   "date": "MM.DD format",
@@ -863,27 +1267,21 @@ Return ONLY valid JSON, no markdown:
   "errorTypes": ["시제 오류","관사·전치사"]
 }
 Return ONLY JSON.`}
-        ]}]})
-    });
-    const d=await resp.json();
-    const p=JSON.parse(d.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim());
-    if(!data.extraLessons) data.extraLessons=[];
-    if(!data.extraLessons.find(l=>l.date===p.date)) {
-      data.extraLessons.push({date:p.date,tutor:p.tutor,topic_ko:p.topic_ko,topic_en:p.topic_en,tags_ko:p.tags_ko,tags_en:p.tags_en});
-      data.extraLessons.sort((a,b)=>a.date.localeCompare(b.date));
-    }
-    if(p.newVocab){if(!data.extraVocab)data.extraVocab=[];p.newVocab.forEach(v=>{if(!VOCAB_EN.includes(v.en)&&!data.extraVocab.find(x=>x.en===v.en))data.extraVocab.push(v);});}
-    if(p.errorTypes){if(!data.extraErrorCounts)data.extraErrorCounts=[0,0,0,0,0];const errNames_ko=['시제','관사','단수','접속사','어휘'];p.errorTypes.forEach(et=>{const i=errNames_ko.findIndex(n=>et.includes(n));if(i>=0)data.extraErrorCounts[i]++;});}
-    data.corrections=(data.corrections||30)+3;
-    save(data); renderAll();
-    toast(t('toastAdded')+(lang==='ko'?p.topic_ko:p.topic_en));
-    statusMsg.textContent=t('analyzeDone');
-  } catch(e) {
-    statusMsg.textContent=t('analyzeFail'); console.error(e);
-  } finally {
-    prog.classList.remove('on'); pdfInput.disabled=false; pdfInput.value='';
-    setTimeout(()=>{statusMsg.textContent='';},2500);
+      ]}]})
+  });
+  const d=await resp.json();
+  const p=JSON.parse(d.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim());
+  if(!data.extraLessons) data.extraLessons=[];
+  if(!data.extraLessons.find(l=>l.date===p.date)) {
+    data.extraLessons.push({date:p.date,tutor:p.tutor,topic_ko:p.topic_ko,topic_en:p.topic_en,tags_ko:p.tags_ko,tags_en:p.tags_en});
+    data.extraLessons.sort((a,b)=>a.date.localeCompare(b.date));
   }
+  if(p.newVocab){if(!data.extraVocab)data.extraVocab=[];p.newVocab.forEach(v=>{if(!VOCAB_EN.includes(v.en)&&!data.extraVocab.find(x=>x.en===v.en))data.extraVocab.push(v);});}
+  if(p.errorTypes){if(!data.extraErrorCounts)data.extraErrorCounts=[0,0,0,0,0];const errNames_ko=['시제','관사','단수','접속사','어휘'];p.errorTypes.forEach(et=>{const i=errNames_ko.findIndex(n=>et.includes(n));if(i>=0)data.extraErrorCounts[i]++;});}
+  data.corrections=(data.corrections||30)+3;
+  save(data); renderAll();
+  toast(t('toastAdded')+(lang==='ko'?p.topic_ko:p.topic_en));
+  statusMsg.textContent=t('analyzeDone');
 }
 
 // getLessons도 extraLessons에 언어 적용

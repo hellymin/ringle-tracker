@@ -1132,6 +1132,34 @@ async function openGDrivePicker() {
     // 링글 PDF 파일 검색
     const files = await searchGDriveFiles(gdriveToken);
     renderGDriveList(files, listEl);
+
+    // 새 파일(아직 분석 안 된 것) 자동 순차 분석
+    const alreadyDates = getAlreadyAddedDates();
+    const newFiles = files.filter(f => {
+      const guessedDate = fileNameToDate(f.name);
+      return !guessedDate || !alreadyDates.has(guessedDate);
+    });
+
+    if (newFiles.length === 0) {
+      statusMsg.textContent = lang === 'ko' ? '✅ 모든 파일이 이미 분석되어 있어요.' : '✅ All files already analyzed.';
+      setTimeout(() => { statusMsg.textContent = ''; }, 3000);
+    } else {
+      statusMsg.textContent = lang === 'ko'
+        ? `🔄 새 수업 ${newFiles.length}개 자동 분석 시작...`
+        : `🔄 Auto-analyzing ${newFiles.length} new lesson(s)...`;
+      for (const f of newFiles) {
+        const statusBadge = document.getElementById(`gdrive-status-${f.id}`);
+        if (statusBadge) { statusBadge.textContent = lang === 'ko' ? '분석중...' : 'Analyzing...'; statusBadge.style.background = 'var(--orange)'; }
+        try {
+          await analyzeGDriveFile(f.id, f.name, /*silent=*/true);
+          if (statusBadge) { statusBadge.textContent = '✅'; statusBadge.style.background = 'var(--green)'; }
+        } catch(err) {
+          if (statusBadge) { statusBadge.textContent = '❌'; statusBadge.style.background = '#ff4d4f'; }
+        }
+      }
+      statusMsg.textContent = lang === 'ko' ? '✅ 자동 분석 완료!' : '✅ Auto-analysis complete!';
+      setTimeout(() => { statusMsg.textContent = ''; }, 3000);
+    }
   } catch(e) {
     listEl.innerHTML = `<div class="gdrive-empty">❌ 드라이브 연결 실패: ${e.message}</div>`;
     gdriveToken = null;
@@ -1172,27 +1200,46 @@ async function searchGDriveFiles(token) {
   return data.files || [];
 }
 
+function getAlreadyAddedDates() {
+  // BASE_LESSONS 날짜 + extraLessons 날짜를 Set으로 반환
+  const base = (typeof BASE_LESSONS !== 'undefined' ? BASE_LESSONS : []).map(l => l.date);
+  const extra = (data.extraLessons || []).map(l => l.date);
+  return new Set([...base, ...extra]);
+}
+
+function fileNameToDate(fileName) {
+  // "20260531_링글_일대일..." → "05.31"
+  const m = fileName.match(/(\d{4})(\d{2})(\d{2})/);
+  if (m) return `${m[2]}.${m[3]}`;
+  return null;
+}
+
 function renderGDriveList(files, listEl) {
   if (!files.length) {
     listEl.innerHTML = `<div class="gdrive-empty">${t('gdriveEmpty')}</div>`;
     return;
   }
+  const alreadyDates = getAlreadyAddedDates();
   listEl.innerHTML = files.map(f => {
     const date = new Date(f.modifiedTime).toLocaleDateString('ko-KR', {month:'2-digit', day:'2-digit'});
     const name = f.name.replace('.pdf','').replace('_링글_일대일_화상영어','').replace('링글_일대일_화상영어_','');
-    return `<div class="gdrive-file-item">
+    const guessedDate = fileNameToDate(f.name);
+    const isDone = guessedDate && alreadyDates.has(guessedDate);
+    return `<div class="gdrive-file-item" id="gdrive-item-${f.id}">
       <span class="gdrive-file-name" title="${f.name}">📄 ${name}</span>
       <span class="gdrive-file-date">${date}</span>
-      <button class="gdrive-use-btn" onclick="analyzeGDriveFile('${f.id}','${f.name.replace(/'/g,'')}')">${lang==='ko'?'분석':'Analyze'}</button>
+      ${isDone
+        ? `<span class="gdrive-use-btn" style="background:var(--green);cursor:default">✅</span>`
+        : `<span class="gdrive-use-btn" id="gdrive-status-${f.id}" style="background:var(--gray400);cursor:default">${lang==='ko'?'대기중':'Queued'}</span>`
+      }
     </div>`;
   }).join('');
 }
 
-async function analyzeGDriveFile(fileId, fileName) {
+async function analyzeGDriveFile(fileId, fileName, silent = false) {
   const prog = document.getElementById('prog');
   const statusMsg = document.getElementById('status-msg');
-  prog.classList.add('on');
-  statusMsg.textContent = t('gdriveAnalyzing');
+  if (!silent) { prog.classList.add('on'); statusMsg.textContent = t('gdriveAnalyzing'); }
 
   try {
     // Drive에서 PDF 바이너리 다운로드
@@ -1210,17 +1257,18 @@ async function analyzeGDriveFile(fileId, fileName) {
       fr.readAsDataURL(blob);
     });
 
-    statusMsg.textContent = t('analyzing2');
-
-    // Claude API 분석 (기존 analyze 함수와 동일한 로직)
+    // Claude API 분석
     await analyzeBase64(b64, fileName);
 
   } catch(e) {
-    statusMsg.textContent = t('analyzeFail');
+    if (!silent) statusMsg.textContent = t('analyzeFail');
     console.error(e);
+    throw e;
   } finally {
-    prog.classList.remove('on');
-    setTimeout(() => { statusMsg.textContent = ''; }, 2500);
+    if (!silent) {
+      prog.classList.remove('on');
+      setTimeout(() => { statusMsg.textContent = ''; }, 2500);
+    }
   }
 }
 
